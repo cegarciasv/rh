@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INTEGRA | Plataforma de Evaluación de Integridad Laboral</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;900&family=Barlow+Condensed:wght@600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--navy:#0f2444;--blue:#1a4480;--mid:#2563eb;--light:#3b82f6;--acc:#0ea5e9;--g900:#111827;--g800:#1f2937;--g700:#374151;--g600:#4b5563;--g500:#6b7280;--g400:#9ca3af;--g300:#d1d5db;--g200:#e5e7eb;--g100:#f3f4f6;--g50:#f9fafb;--white:#fff;--green:#16a34a;--yellow:#ca8a04;--orange:#ea580c;--red:#dc2626;--sw:264px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Barlow',sans-serif;background:var(--g50);color:var(--g900);min-height:100vh}
+#app{display:flex;min-height:100vh}
+/* SIDEBAR */
+#sidebar{width:var(--sw);background:var(--navy);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s}
+.sb-logo{padding:24px 20px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sb-logo .lm{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:#fff;letter-spacing:-.5px}
+.sb-logo .lm span{color:var(--acc)}
+.sb-logo .ls{font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.8px;margin-top:2px}
+.sb-nav{flex:1;padding:14px 10px;overflow-y:auto}
+.sb-section{font-size:10px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:1.5px;text-transform:uppercase;padding:10px 12px 5px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;color:rgba(255,255,255,.65);transition:all .15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:inherit}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav-item.active{background:rgba(37,99,235,.4);color:#fff}
+.nav-item svg{width:17px;height:17px;flex-shrink:0}
+.sb-footer{padding:14px 16px;border-top:1px solid rgba(255,255,255,.1)}
+.sb-user{display:flex;align-items:center;gap:10px}
+.sb-avatar{width:32px;height:32px;border-radius:50%;background:var(--mid);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.sb-username{font-weight:600;color:rgba(255,255,255,.9);font-size:13px}
+.sb-role{font-size:11px;color:rgba(255,255,255,.4)}
+.btn-logout{margin-top:10px;width:100%;padding:8px;border-radius:7px;background:rgba(255,255,255,.06);border:none;cursor:pointer;color:rgba(255,255,255,.55);font-size:13px;font-family:inherit;transition:all .15s}
+.btn-logout:hover{background:rgba(220,38,38,.2);color:#fca5a5}
+/* MAIN */
+#main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid var(--g200);padding:0 32px;height:62px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar h1{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--navy)}
+.page{padding:28px 32px;flex:1}
+/* CARDS */
+.card{background:#fff;border-radius:12px;border:1px solid var(--g200);padding:24px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.stat-card{background:#fff;border-radius:12px;border:1px solid var(--g200);padding:20px 24px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.stat-label{font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.5px}
+.stat-val{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:900;color:var(--navy);margin-top:2px;line-height:1}
+.stat-sub{font-size:13px;color:var(--g500);margin-top:4px}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;border:none;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--mid);color:#fff}.btn-primary:hover{background:var(--blue)}
+.btn-secondary{background:var(--g100);color:var(--g700);border:1px solid var(--g300)}.btn-secondary:hover{background:var(--g200)}
+.btn-success{background:#dcfce7;color:#166534}.btn-success:hover{background:#bbf7d0}
+.btn-danger{background:#fee2e2;color:#dc2626}.btn-danger:hover{background:#fecaca}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-icon{padding:7px;border-radius:7px;background:var(--g100);border:1px solid var(--g200);cursor:pointer;display:inline-flex}
+.btn-icon:hover{background:var(--g200)}
+/* FORMS */
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;font-weight:700;color:var(--g700);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.3px}
+.form-input{width:100%;padding:10px 13px;border-radius:8px;border:1.5px solid var(--g300);font-size:14px;font-family:inherit;color:var(--g900);transition:border-color .15s;background:#fff}
+.form-input:focus{outline:none;border-color:var(--mid);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:16px;padding-right:36px}
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--g200);background:#fff}
+table{width:100%;border-collapse:collapse}
+th{background:var(--g50);padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--g200)}
+td{padding:13px 16px;font-size:13px;color:var(--g700);border-bottom:1px solid var(--g100);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--g50)}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.2px}
+.badge-green{background:#dcfce7;color:#166534}
+.badge-yellow{background:#fef3c7;color:#92400e}
+.badge-orange{background:#ffedd5;color:#9a3412}
+.badge-red{background:#fee2e2;color:#991b1b}
+.badge-blue{background:#dbeafe;color:#1e40af}
+.badge-gray{background:var(--g100);color:var(--g600)}
+/* GRIDS */
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+/* PAGE HEADER */
+.ph{margin-bottom:24px}
+.ph h1{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--navy)}
+.ph p{font-size:13px;color:var(--g500);margin-top:3px}
+.ph-row{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
+/* LOGIN */
+#vLogin{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy) 0%,var(--blue) 60%,#1e4db7 100%);position:relative;overflow:hidden}
+#vLogin::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(14,165,233,.15) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(59,130,246,.1) 0%,transparent 50%)}
+.login-card{background:#fff;border-radius:20px;padding:44px;width:410px;max-width:95vw;position:relative;box-shadow:0 25px 60px rgba(0,0,0,.3)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-lm{font-family:'Barlow Condensed',sans-serif;font-size:44px;font-weight:900;color:var(--navy);letter-spacing:-1px;display:block}
+.login-lm span{color:var(--mid)}
+.login-ls{font-size:11px;color:var(--g500);letter-spacing:.5px;margin-top:2px}
+.login-divider{width:36px;height:3px;background:var(--mid);margin:14px auto;border-radius:2px}
+/* EVAL */
+#vEval,#vLanding{min-height:100vh;background:linear-gradient(135deg,#f0f4ff 0%,#e8f4fd 100%);display:flex;flex-direction:column}
+.eval-hdr{background:var(--navy);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.eval-hdr .lm{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:#fff}
+.eval-hdr .lm span{color:var(--acc)}
+.eval-prog-bar{flex:1;height:5px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden}
+.eval-prog-fill{height:100%;background:var(--acc);border-radius:3px;transition:width .5s ease}
+.eval-prog-txt{font-size:12px;color:rgba(255,255,255,.6);white-space:nowrap}
+.eval-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 16px}
+.eval-card{background:#fff;border-radius:20px;padding:44px;max-width:700px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.08)}
+.eq-cluster{display:inline-flex;align-items:center;gap:6px;background:var(--g100);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--g600);margin-bottom:18px;text-transform:uppercase;letter-spacing:.5px}
+.eq-num{font-size:12px;font-weight:700;color:var(--mid);margin-bottom:6px}
+.eq-text{font-size:19px;font-weight:500;color:var(--g900);line-height:1.45;margin-bottom:28px}
+/* LIKERT */
+.likert-row{display:flex;gap:8px}
+.l-opt{flex:1;border:2px solid var(--g200);border-radius:12px;padding:14px 6px;text-align:center;cursor:pointer;transition:all .15s;background:#fff;font-family:inherit}
+.l-opt:hover{border-color:var(--mid);background:#eff6ff}
+.l-opt.sel{border-color:var(--mid);background:var(--mid);color:#fff}
+.l-num{font-size:22px;font-weight:900;display:block;font-family:'Barlow Condensed',sans-serif}
+.l-lbl{font-size:10px;font-weight:600;display:block;margin-top:3px;opacity:.75}
+.l-anchors{display:flex;justify-content:space-between;font-size:10px;color:var(--g500);margin-top:6px;padding:0 2px}
+/* SITUATIONAL */
+.sit-opts{display:flex;flex-direction:column;gap:8px}
+.s-opt{display:flex;align-items:center;gap:12px;border:2px solid var(--g200);border-radius:12px;padding:13px 16px;cursor:pointer;transition:all .15s;background:#fff;font-family:inherit;text-align:left;font-size:14px;color:var(--g700)}
+.s-opt:hover{border-color:var(--mid);background:#eff6ff}
+.s-opt.sel{border-color:var(--mid);background:var(--mid);color:#fff}
+.s-letter{width:30px;height:30px;border-radius:50%;background:var(--g100);color:var(--g700);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;flex-shrink:0;transition:all .15s;font-family:'Barlow Condensed',sans-serif}
+.s-opt.sel .s-letter{background:rgba(255,255,255,.2);color:#fff}
+.eval-nav{display:flex;justify-content:space-between;align-items:center;margin-top:28px}
+/* LANDING */
+#vLanding{align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy) 0%,var(--blue) 100%)}
+.land-card{background:#fff;border-radius:20px;padding:44px;max-width:540px;width:90%;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,.25)}
+.land-card h1{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;color:var(--navy);margin-bottom:8px}
+.land-card>p{font-size:13px;color:var(--g600);line-height:1.6;margin-bottom:20px}
+.cand-info{background:var(--g50);border-radius:10px;padding:14px 18px;margin:16px 0;text-align:left}
+.ci-row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0}
+.ci-key{color:var(--g500);font-weight:500}.ci-val{font-weight:700;color:var(--navy)}
+/* DONE */
+#vDone{min-height:100vh;background:linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%);display:flex;align-items:center;justify-content:center}
+.done-card{background:#fff;border-radius:20px;padding:52px 44px;max-width:460px;width:90%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.08)}
+.done-icon{width:76px;height:76px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.done-card h1{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;color:var(--navy);margin-bottom:10px}
+.done-card p{font-size:13px;color:var(--g600);line-height:1.6}
+/* REPORT */
+.rpt-container{max-width:860px;margin:0 auto}
+.rpt-cover{background:linear-gradient(135deg,var(--navy) 0%,#1e4db7 100%);border-radius:16px;padding:52px 44px;color:#fff;margin-bottom:20px;position:relative;overflow:hidden}
+.rpt-cover::after{content:'';position:absolute;right:-60px;bottom:-60px;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,.03)}
+.rpt-cover::before{content:'';position:absolute;left:60%;top:-80px;width:200px;height:200px;border-radius:50%;background:rgba(14,165,233,.08)}
+.rpt-cover-logo{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;margin-bottom:36px;position:relative}
+.rpt-cover-logo span{color:var(--acc)}
+.rpt-cover h1{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:900;margin-bottom:6px;position:relative}
+.rpt-cover-sub{font-size:13px;opacity:.65;margin-bottom:36px;position:relative}
+.rpt-cover-meta{display:grid;grid-template-columns:1fr 1fr;gap:14px;position:relative}
+.rpt-field label{font-size:10px;opacity:.45;text-transform:uppercase;letter-spacing:.5px}
+.rpt-field p{font-size:15px;font-weight:700;margin-top:2px}
+.rpt-confidential{margin-top:36px;font-size:10px;opacity:.35;border-top:1px solid rgba(255,255,255,.1);padding-top:14px;position:relative}
+.rpt-section{background:#fff;border-radius:12px;border:1px solid var(--g200);padding:28px;margin-bottom:18px}
+.rpt-h2{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--navy);margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.rpt-h2::before{content:'';display:block;width:4px;height:22px;background:var(--mid);border-radius:2px;flex-shrink:0}
+/* GAUGE */
+.gauge-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px}
+/* CLUSTER BARS */
+.cl-bar{margin-bottom:10px}
+.cl-bar-hdr{display:flex;justify-content:space-between;margin-bottom:4px}
+.cl-bar-name{font-size:12px;font-weight:700;color:var(--g700)}
+.cl-bar-val{font-size:12px;font-weight:900;color:var(--navy)}
+.cl-bar-track{height:7px;background:var(--g100);border-radius:4px;overflow:hidden}
+.cl-bar-fill{height:100%;border-radius:4px;transition:width .8s ease}
+/* FLAGS */
+.flags-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.flag-item{border-radius:10px;padding:14px}
+.flag-item.on{background:#fee2e2;border:1px solid #fecaca}
+.flag-item.off{background:var(--g50);border:1px solid var(--g200)}
+.flag-title{font-size:12px;font-weight:700;margin-bottom:3px}
+.flag-item.on .flag-title{color:#991b1b}
+.flag-item.off .flag-title{color:var(--g600)}
+.flag-desc{font-size:11px}
+.flag-item.on .flag-desc{color:#b91c1c}
+.flag-item.off .flag-desc{color:var(--g500)}
+/* SEMAFORO */
+.semaforo{display:flex;gap:8px;margin-top:12px}
+.sem-light{flex:1;padding:10px 6px;border-radius:8px;text-align:center;font-size:11px;font-weight:700;transition:all .3s}
+.sem-light.on{transform:scale(1.05);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.sem-light.off{opacity:.25}
+/* SCORE CIRCLE */
+.score-big{font-family:'Barlow Condensed',sans-serif;font-size:76px;font-weight:900;line-height:1}
+/* NARRATIVE */
+.narrative{font-size:13px;line-height:1.8;color:var(--g700)}
+.narrative p{margin-bottom:12px}
+.narrative strong{color:var(--navy);font-weight:700}
+/* LINK BOX */
+.link-box{background:var(--g50);border:1px solid var(--g200);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:8px;font-size:12px;font-family:monospace;word-break:break-all;color:var(--g700)}
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s}
+.modal{background:#fff;border-radius:16px;padding:28px;max-width:520px;width:90%;box-shadow:0 25px 60px rgba(0,0,0,.3)}
+.modal h3{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--navy);margin-bottom:14px}
+/* ALERT */
+.alert{padding:12px 14px;border-radius:9px;font-size:13px;margin-bottom:14px;display:flex;gap:8px;align-items:flex-start}
+.alert-info{background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe}
+.alert-warn{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+.alert-err{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+.alert-ok{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+/* MISC */
+.spinner{width:28px;height:28px;border:3px solid var(--g200);border-top-color:var(--mid);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.empty-state{text-align:center;padding:56px 20px;color:var(--g500)}
+.empty-state svg{width:44px;height:44px;margin:0 auto 14px;opacity:.35;display:block}
+.empty-state h3{font-size:17px;font-weight:700;color:var(--g700);margin-bottom:6px}
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:flex-end}
+.f-group{display:flex;flex-direction:column;gap:4px}
+.f-group label{font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.3px}
+.f-input{padding:8px 12px;border-radius:8px;border:1.5px solid var(--g200);font-size:13px;font-family:inherit;background:#fff}
+.f-input:focus{outline:none;border-color:var(--mid)}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--g200);margin-bottom:22px}
+.tab{padding:10px 16px;font-size:13px;font-weight:500;color:var(--g500);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab.active{color:var(--mid);border-color:var(--mid);font-weight:700}
+.hidden{display:none!important}
+.flex{display:flex}.flex-col{flex-direction:column}.items-c{align-items:center}.justify-b{justify-content:space-between}
+.gap-2{gap:8px}.gap-3{gap:12px}.gap-4{gap:16px}
+.mt-2{margin-top:8px}.mt-4{margin-top:16px}.mt-6{margin-top:24px}
+.mb-4{margin-bottom:16px}
+.text-sm{font-size:12px}.text-xs{font-size:11px}
+.text-gray{color:var(--g500)}.font-bold{font-weight:700}.font-semibold{font-weight:600}
+.w-full{width:100%}.text-right{text-align:right}.text-center{text-align:center}
+.divider{border:none;border-top:1px solid var(--g200);margin:20px 0}
+/* DOT TYPING */
+.dots{display:inline-flex;gap:4px;align-items:center}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--mid);animation:bounce 1.2s infinite}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,80%,100%{opacity:.3}40%{opacity:1}}
+/* PRINT */
+@media print{
+  #sidebar,.topbar,.no-print{display:none!important}
+  #main{margin-left:0!important}
+  .rpt-container{max-width:100%}
+  .rpt-section{break-inside:avoid}
+  .rpt-cover{background:#0f2444!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+@media(max-width:1024px){.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){#sidebar{transform:translateX(-100%)}.open #sidebar{transform:none}#main{margin-left:0}.g3,.g2{grid-template-columns:1fr}.page{padding:16px}.flags-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<!-- =========== LOGIN =========== -->
+<div id="vLogin" class="hidden">
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="login-lm">INTEGRA<span>360</span></span>
+      <div class="login-divider"></div>
+      <div class="login-ls">PLATAFORMA DE EVALUACIÓN DE INTEGRIDAD LABORAL</div>
+    </div>
+    <div id="loginErr" class="alert alert-err hidden" style="margin-bottom:16px">⚠ Credenciales incorrectas</div>
+    <div class="form-group">
+      <label class="form-label">Correo electrónico</label>
+      <input id="loginEmail" type="email" class="form-input" placeholder="admin@empresa.com" value="admin@integra.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Contraseña</label>
+      <input id="loginPass" type="password" class="form-input" placeholder="••••••••" value="Admin2024">
+    </div>
+    <button class="btn btn-primary w-full" style="padding:12px;font-size:15px;justify-content:center" onclick="doLogin()">Ingresar al Sistema</button>
+    <p style="text-align:center;margin-top:16px;font-size:11px;color:var(--g400)">Acceso restringido · Solo personal autorizado</p>
+  </div>
+</div>
+
+<!-- =========== SIDEBAR + ADMIN AREA =========== -->
+<div id="app" class="hidden">
+<div id="sidebar">
+  <div class="sb-logo">
+    <div class="lm">INTEGRA<span>360</span></div>
+    <div class="ls">EVALUACIÓN DE INTEGRIDAD</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Principal</div>
+    <button class="nav-item" data-view="dashboard" onclick="nav('dashboard',this)">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+      Dashboard
+    </button>
+    <div class="sb-section">Candidatos</div>
+    <button class="nav-item" data-view="candidates" onclick="nav('candidates',this)">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Candidatos
+    </button>
+    <button class="nav-item" data-view="create" onclick="nav('create',this)">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Nuevo Candidato
+    </button>
+    <div class="sb-section">Resultados</div>
+    <button class="nav-item" data-view="history" onclick="nav('history',this)">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      Historial de Evaluaciones
+    </button>
+  </nav>
+  <div class="sb-footer">
+    <div class="sb-user">
+      <div class="sb-avatar" id="sbAvatar">A</div>
+      <div>
+        <div class="sb-username" id="sbName">Administrador</div>
+        <div class="sb-role">Administrador del Sistema</div>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Cerrar Sesión</button>
+  </div>
+</div>
+<div id="main">
+  <div class="topbar">
+    <h1 id="topbarTitle">Dashboard</h1>
+    <div class="flex items-c gap-3">
+      <span class="text-sm text-gray" id="topbarDate"></span>
+    </div>
+  </div>
+  <!-- DASHBOARD -->
+  <div id="vDashboard" class="page hidden">
+    <div class="ph"><h1>Dashboard de Integridad</h1><p>Resumen ejecutivo de evaluaciones INTEGRA-100</p></div>
+    <div class="g4 mb-4" id="statsRow"></div>
+    <div class="g2 mt-4">
+      <div class="card"><div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--navy);margin-bottom:16px">Distribución por Nivel de Riesgo</div><canvas id="chartRisk" height="200"></canvas></div>
+      <div class="card"><div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--navy);margin-bottom:16px">Scores Promedio por Dimensión</div><canvas id="chartDim" height="200"></canvas></div>
+    </div>
+    <div class="card mt-4">
+      <div class="flex items-c justify-b mb-4">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--navy)">Evaluaciones Recientes</div>
+        <button class="btn btn-secondary btn-sm" onclick="nav('history')">Ver todas</button>
+      </div>
+      <div id="recentEvals"></div>
+    </div>
+  </div>
+  <!-- CANDIDATES -->
+  <div id="vCandidates" class="page hidden">
+    <div class="ph ph-row">
+      <div><h1>Candidatos</h1><p>Gestión de participantes en procesos de evaluación</p></div>
+      <button class="btn btn-primary" onclick="nav('create')">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Nuevo Candidato
+      </button>
+    </div>
+    <div class="filter-row">
+      <div class="f-group"><label>Buscar</label><input class="f-input" id="fSearch" placeholder="Nombre o puesto..." oninput="renderCandidates()"></div>
+      <div class="f-group"><label>Estado</label>
+        <select class="f-input form-select" id="fStatus" onchange="renderCandidates()">
+          <option value="">Todos</option>
+          <option value="pending">Pendiente</option>
+          <option value="completed">Completado</option>
+        </select>
+      </div>
+    </div>
+    <div class="tbl-wrap"><div id="candidatesTable"></div></div>
+  </div>
+  <!-- CREATE -->
+  <div id="vCreate" class="page hidden">
+    <div class="ph"><h1>Nuevo Candidato</h1><p>Registre un candidato y genere su enlace único de evaluación</p></div>
+    <div class="card" style="max-width:580px">
+      <div id="createMsg"></div>
+      <div class="g2">
+        <div class="form-group"><label class="form-label">Nombre completo *</label><input id="cName" class="form-input" placeholder="Juan Pérez García"></div>
+        <div class="form-group"><label class="form-label">Correo electrónico</label><input id="cEmail" class="form-input" placeholder="juan@empresa.com"></div>
+      </div>
+      <div class="g2">
+        <div class="form-group"><label class="form-label">Puesto / Cargo *</label><input id="cPosition" class="form-input" placeholder="Gerente de Operaciones"></div>
+        <div class="form-group"><label class="form-label">Departamento</label><input id="cDept" class="form-input" placeholder="Finanzas, RR.HH., ..."></div>
+      </div>
+      <div class="form-group"><label class="form-label">Notas internas</label><input id="cNotes" class="form-input" placeholder="Proceso de contratación, nivel de puesto..."></div>
+      <div class="form-group">
+        <label class="form-label">¿Puede retroceder en preguntas?</label>
+        <select id="cCanGoBack" class="form-input form-select">
+          <option value="false">No (recomendado)</option>
+          <option value="true">Sí</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="createCandidate()">Crear Candidato y Generar Link</button>
+    </div>
+    <div id="linkResult" class="hidden" style="max-width:580px;margin-top:18px">
+      <div class="card">
+        <div class="alert alert-ok">✓ Candidato registrado. Comparte el siguiente enlace:</div>
+        <div class="link-box" id="generatedLink"></div>
+        <button class="btn btn-secondary btn-sm mt-2" onclick="copyLink()">Copiar enlace</button>
+      </div>
+    </div>
+  </div>
+  <!-- HISTORY -->
+  <div id="vHistory" class="page hidden">
+    <div class="ph"><h1>Historial de Evaluaciones</h1><p>Resultados de todas las evaluaciones completadas</p></div>
+    <div class="filter-row">
+      <div class="f-group"><label>Nombre / Puesto</label><input class="f-input" id="hSearch" placeholder="Buscar..." oninput="renderHistory()"></div>
+      <div class="f-group"><label>Nivel de Riesgo</label>
+        <select class="f-input form-select" id="hRisk" onchange="renderHistory()">
+          <option value="">Todos</option>
+          <option value="verde">Verde (Bajo)</option>
+          <option value="amarillo">Amarillo (Moderado)</option>
+          <option value="naranja">Naranja (Alto)</option>
+          <option value="rojo">Rojo (Crítico)</option>
+        </select>
+      </div>
+      <div class="f-group"><label>Desde</label><input class="f-input" id="hFrom" type="date" onchange="renderHistory()"></div>
+      <div class="f-group"><label>Hasta</label><input class="f-input" id="hTo" type="date" onchange="renderHistory()"></div>
+      <div style="margin-top:auto"><button class="btn btn-success" onclick="exportExcel()">📊 Exportar Excel</button></div>
+    </div>
+    <div class="tbl-wrap"><div id="historyTable"></div></div>
+  </div>
+  <!-- REPORT -->
+  <div id="vReport" class="page hidden">
+    <div class="ph ph-row no-print">
+      <div><h1>Reporte de Evaluación</h1><p>Reporte ejecutivo INTEGRA-100</p></div>
+      <div class="flex gap-2">
+        <button class="btn btn-secondary" onclick="nav('history')">← Volver</button>
+        <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir / PDF</button>
+      </div>
+    </div>
+    <div class="rpt-container" id="reportContent"></div>
+  </div>
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- =========== EVAL VIEWS =========== -->
+<div id="vLanding" class="hidden">
+  <div class="land-card">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--navy);margin-bottom:4px">INTEGRA<span style="color:var(--mid)">360</span></div>
+    <div style="font-size:10px;color:var(--g400);letter-spacing:.8px;margin-bottom:20px">BATERÍA INTEGRAL DE RIESGO ÉTICO Y JUICIO LABORAL</div>
+    <h1>Evaluación de Integridad</h1>
+    <p>Bienvenido/a. Esta evaluación es confidencial y forma parte del proceso de selección o promoción. Responda con honestidad; no hay respuestas correctas o incorrectas.</p>
+    <div class="cand-info" id="landInfo"></div>
+    <div class="alert alert-info" style="text-align:left;font-size:12px">
+      ℹ️ <div><strong>Instrucciones:</strong> La evaluación consta de 100 preguntas. Una vez que avance a la siguiente pregunta, <span id="noBackMsg">no podrá regresar</span>. Tómese el tiempo necesario para leer cada pregunta.</div>
+    </div>
+    <button class="btn btn-primary w-full" style="justify-content:center;padding:13px;font-size:15px;margin-top:4px" onclick="startEval()">Comenzar Evaluación →</button>
+    <p style="font-size:10px;color:var(--g400);margin-top:12px">Evaluación INTEGRA-100 v1.0 · Uso confidencial</p>
+  </div>
+</div>
+
+<div id="vEval" class="hidden">
+  <div class="eval-hdr">
+    <div class="lm">INTEGRA<span>360</span></div>
+    <div class="eval-prog-bar"><div class="eval-prog-fill" id="evalProgFill"></div></div>
+    <div class="eval-prog-txt" id="evalProgTxt">1 / 100</div>
+  </div>
+  <div class="eval-body">
+    <div class="eval-card">
+      <div class="eq-cluster" id="evalCluster">Cluster</div>
+      <div class="eq-num" id="evalQNum">Pregunta 1 de 100</div>
+      <div class="eq-text" id="evalQText">Texto de la pregunta...</div>
+      <div id="evalOptions"></div>
+      <div class="eval-nav">
+        <button class="btn btn-secondary" id="btnPrev" onclick="evalPrev()">← Anterior</button>
+        <span class="text-sm text-gray" id="evalAnswerCount"></span>
+        <button class="btn btn-primary" id="btnNext" onclick="evalNext()">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="vDone" class="hidden">
+  <div class="done-card">
+    <div class="done-icon">
+      <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="#16a34a" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <h1>Evaluación Completada</h1>
+    <p>Sus respuestas han sido registradas correctamente. Gracias por participar en este proceso.</p>
+    <p style="margin-top:12px;font-size:12px;color:var(--g400)">El equipo de Recursos Humanos se comunicará con usted próximamente con los resultados del proceso de selección.</p>
+    <p style="margin-top:24px;font-size:11px;color:var(--g400)">INTEGRA-100 v1.0 · Uso confidencial</p>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modalOverlay" class="overlay hidden">
+  <div class="modal" id="modalBox">
+    <h3 id="modalTitle">Confirmar</h3>
+    <p id="modalMsg" style="font-size:13px;color:var(--g600);margin-bottom:20px"></p>
+    <div class="flex gap-2 justify-b">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-danger" id="modalConfirmBtn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== CONSTANTS ====================
+const QUESTIONS = [
+  // CLUSTER 1: Honestidad normativa
+  {id:1,cluster:1,type:'likert',inv:false,text:"Tomar artículos pequeños de la empresa no debería considerarse grave."},
+  {id:2,cluster:1,type:'likert',inv:false,text:"Si nadie resulta afectado, romper una regla puede ser aceptable."},
+  {id:3,cluster:1,type:'likert',inv:false,text:"Decir toda la verdad en el trabajo no siempre conviene."},
+  {id:4,cluster:1,type:'likert',inv:false,text:"Ocultar un error menor puede evitar problemas innecesarios."},
+  {id:5,cluster:1,type:'likert',inv:false,text:"La mayoría de personas aprovecharía una oportunidad indebida si no la descubren."},
+  {id:6,cluster:1,type:'likert',inv:false,text:"Ser honesto a veces perjudica más de lo que ayuda."},
+  {id:7,cluster:1,type:'likert',inv:false,text:"Si un resultado es bueno, el medio utilizado pasa a segundo plano."},
+  {id:8,cluster:1,type:'likert',inv:false,text:"Es válido omitir información si eso evita una sanción."},
+  {id:9,cluster:1,type:'likert',inv:false,text:"Las reglas excesivas están para flexibilizarse."},
+  {id:10,cluster:1,type:'likert',inv:false,text:"Un colaborador productivo merece más tolerancia ante pequeñas faltas."},
+  // CLUSTER 2: Conductas pasadas
+  {id:11,cluster:2,type:'frequency',inv:false,text:"He ocultado un error para evitar consecuencias."},
+  {id:12,cluster:2,type:'frequency',inv:false,text:"He usado tiempo de trabajo para asuntos personales sin autorización."},
+  {id:13,cluster:2,type:'frequency',inv:false,text:"He mentido para proteger mi imagen laboral."},
+  {id:14,cluster:2,type:'frequency',inv:false,text:"He dejado de reportar una irregularidad porque no quería involucrarme."},
+  {id:15,cluster:2,type:'frequency',inv:false,text:"He encubierto a un compañero ante una falta."},
+  {id:16,cluster:2,type:'frequency',inv:false,text:"He alterado u omitido información en un reporte."},
+  {id:17,cluster:2,type:'frequency',inv:false,text:"He usado recursos de la empresa para beneficio propio."},
+  {id:18,cluster:2,type:'frequency',inv:false,text:"He justificado internamente una acción incorrecta porque \"todos lo hacen\"."},
+  {id:19,cluster:2,type:'frequency',inv:false,text:"He omitido devolver algo que no me pertenecía."},
+  {id:20,cluster:2,type:'frequency',inv:false,text:"He dado una explicación falsa para evitar una llamada de atención."},
+  // CLUSTER 3: Robo y apropiación
+  {id:21,cluster:3,type:'likert',inv:false,text:"Llevarse material sobrante no es realmente robar."},
+  {id:22,cluster:3,type:'likert',inv:false,text:"Usar combustible, equipo o inventario para asuntos personales puede justificarse."},
+  {id:23,cluster:3,type:'likert',inv:false,text:"Si la empresa no controla bien sus activos, comparte parte de la responsabilidad."},
+  {id:24,cluster:3,type:'likert',inv:false,text:"Tomar dinero en forma temporal y reponerlo después no es tan grave."},
+  {id:25,cluster:3,type:'likert',inv:false,text:"Aprovechar errores de caja o inventario puede verse como oportunidad."},
+  {id:26,cluster:3,type:'likert',inv:false,text:"Manipular un registro pequeño no debería considerarse fraude."},
+  {id:27,cluster:3,type:'likert',inv:false,text:"El robo interno suele exagerarse más de lo debido."},
+  {id:28,cluster:3,type:'likert',inv:false,text:"Es entendible que alguien tome algo si siente que la empresa le debe."},
+  {id:29,cluster:3,type:'likert',inv:true,text:"Alterar kilometraje, viáticos o comprobantes es una falta seria."},
+  {id:30,cluster:3,type:'likert',inv:true,text:"Beneficiarse de errores administrativos es deshonesto."},
+  // CLUSTER 4: Mentira y veracidad
+  {id:31,cluster:4,type:'likert',inv:false,text:"A veces una mentira protege mejor que la verdad."},
+  {id:32,cluster:4,type:'likert',inv:false,text:"Mentir en temas pequeños no tiene impacto real."},
+  {id:33,cluster:4,type:'likert',inv:false,text:"Es preferible dar una versión favorable aunque no sea exacta."},
+  {id:34,cluster:4,type:'frequency',inv:false,text:"He dicho algo falso para evitar un problema en el trabajo."},
+  {id:35,cluster:4,type:'frequency',inv:false,text:"He ajustado una explicación para verme mejor ante un jefe."},
+  {id:36,cluster:4,type:'likert',inv:false,text:"La verdad completa rara vez es necesaria."},
+  {id:37,cluster:4,type:'likert',inv:false,text:"Es más importante evitar el conflicto que ser totalmente sincero."},
+  {id:38,cluster:4,type:'frequency',inv:false,text:"He exagerado resultados o avances en mis reportes."},
+  {id:39,cluster:4,type:'likert',inv:false,text:"Admitir errores debilita la imagen profesional."},
+  {id:40,cluster:4,type:'likert',inv:true,text:"Prefiero asumir consecuencias antes que mentir."},
+  // CLUSTER 5: Responsabilidad
+  {id:41,cluster:5,type:'likert',inv:true,text:"Cumplo compromisos aunque nadie me supervise."},
+  {id:42,cluster:5,type:'likert',inv:true,text:"Si prometo algo, lo termino."},
+  {id:43,cluster:5,type:'likert',inv:true,text:"Suelo llegar preparado a mis responsabilidades."},
+  {id:44,cluster:5,type:'likert',inv:true,text:"Puedo confiar en mí mismo para actuar correctamente bajo presión."},
+  {id:45,cluster:5,type:'likert',inv:false,text:"Cuando no hay seguimiento, bajo mis estándares de trabajo."},
+  {id:46,cluster:5,type:'likert',inv:true,text:"Si cometo un error, lo informo a quien corresponde."},
+  {id:47,cluster:5,type:'likert',inv:true,text:"Mantengo la calidad aunque el trabajo sea repetitivo."},
+  {id:48,cluster:5,type:'likert',inv:true,text:"Entrego a tiempo incluso cuando la tarea no me gusta."},
+  {id:49,cluster:5,type:'likert',inv:true,text:"Me hago responsable de mis decisiones."},
+  {id:50,cluster:5,type:'likert',inv:false,text:"Necesito supervisión frecuente para mantenerme enfocado."},
+  // CLUSTER 6: Desempeño
+  {id:51,cluster:6,type:'likert',inv:true,text:"Mantengo productividad constante durante la jornada laboral."},
+  {id:52,cluster:6,type:'likert',inv:true,text:"Cumplo procedimientos incluso cuando no son visibles."},
+  {id:53,cluster:6,type:'likert',inv:true,text:"El orden y la disciplina influyen positivamente en mi desempeño."},
+  {id:54,cluster:6,type:'likert',inv:false,text:"Me distraigo fácilmente y dejo tareas incompletas."},
+  {id:55,cluster:6,type:'likert',inv:false,text:"Hago lo mínimo indispensable cuando nadie evalúa mi trabajo."},
+  {id:56,cluster:6,type:'likert',inv:true,text:"Me esfuerzo por corregir desviaciones en lugar de ocultarlas."},
+  {id:57,cluster:6,type:'likert',inv:false,text:"Mi trabajo suele requerir que otros corrijan mis omisiones."},
+  {id:58,cluster:6,type:'likert',inv:true,text:"Priorizo terminar bien sobre terminar rápido."},
+  {id:59,cluster:6,type:'likert',inv:true,text:"Sigo instrucciones con precisión."},
+  {id:60,cluster:6,type:'likert',inv:false,text:"Los detalles rara vez importan si el resultado general sale bien."},
+  // CLUSTER 7: Personalidad/Autocontrol
+  {id:61,cluster:7,type:'likert',inv:false,text:"Actúo impulsivamente cuando me enojo."},
+  {id:62,cluster:7,type:'likert',inv:false,text:"Me cuesta resistir una oportunidad que me beneficia."},
+  {id:63,cluster:7,type:'likert',inv:true,text:"Tolero bien la frustración sin romper reglas."},
+  {id:64,cluster:7,type:'likert',inv:false,text:"Me impaciento cuando los procesos son lentos."},
+  {id:65,cluster:7,type:'likert',inv:false,text:"Bajo presión, puedo perder el control."},
+  {id:66,cluster:7,type:'likert',inv:true,text:"Pienso antes de actuar."},
+  {id:67,cluster:7,type:'likert',inv:false,text:"Me aburro rápido de cumplir normas repetitivas."},
+  {id:68,cluster:7,type:'likert',inv:true,text:"Soy disciplinado incluso en tareas poco agradables."},
+  {id:69,cluster:7,type:'likert',inv:false,text:"Cuando me siento tratado injustamente, justifico romper reglas."},
+  {id:70,cluster:7,type:'likert',inv:false,text:"Mi autocontrol depende mucho del ambiente."},
+  // CLUSTER 8: Soborno/Fraude
+  {id:71,cluster:8,type:'likert',inv:false,text:"Aceptar un favor personal de un proveedor no siempre afecta la objetividad."},
+  {id:72,cluster:8,type:'likert',inv:false,text:"Una atención o regalo puede ser normal en los negocios."},
+  {id:73,cluster:8,type:'likert',inv:false,text:"Si un jefe lo pide, ajustar un dato puede justificarse."},
+  {id:74,cluster:8,type:'likert',inv:false,text:"Favorecer a alguien cercano no siempre es corrupción."},
+  {id:75,cluster:8,type:'frequency',inv:false,text:"He callado ante posibles conflictos de interés."},
+  {id:76,cluster:8,type:'likert',inv:false,text:"Maquillar un indicador para proteger al equipo puede entenderse."},
+  {id:77,cluster:8,type:'likert',inv:true,text:"Un beneficio privado recibido por una decisión laboral es inaceptable."},
+  {id:78,cluster:8,type:'likert',inv:true,text:"Cambiar fechas, cifras o reportes para \"ayudar\" sigue siendo incorrecto."},
+  {id:79,cluster:8,type:'likert',inv:false,text:"En posiciones de autoridad, los resultados pueden pesar más que el procedimiento."},
+  {id:80,cluster:8,type:'likert',inv:false,text:"La presión por metas puede empujar decisiones éticamente grises."},
+  // CLUSTER 9: Incumplimiento
+  {id:81,cluster:9,type:'likert',inv:false,text:"Si una norma dificulta el trabajo, puede ignorarse."},
+  {id:82,cluster:9,type:'likert',inv:true,text:"Antes de decidir, considero consecuencias éticas."},
+  {id:83,cluster:9,type:'likert',inv:false,text:"Prefiero una solución práctica aunque no sea la correcta."},
+  {id:84,cluster:9,type:'likert',inv:true,text:"Cuando decido, evalúo el impacto en otros."},
+  {id:85,cluster:9,type:'likert',inv:false,text:"El incumplimiento pequeño rara vez genera daño real."},
+  {id:86,cluster:9,type:'likert',inv:true,text:"Si una instrucción parece equivocada, debo cuestionarla."},
+  {id:87,cluster:9,type:'likert',inv:false,text:"A veces conviene obedecer aunque la decisión no sea correcta."},
+  {id:88,cluster:9,type:'likert',inv:true,text:"Tomo decisiones pensando en el largo plazo."},
+  // CLUSTER 10: Simulación (Q89-98)
+  {id:89,cluster:10,type:'likert',inv:false,sim:true,text:"Nunca he mentido en mi vida."},
+  {id:90,cluster:10,type:'likert',inv:false,sim:true,text:"Siempre he cumplido todas las reglas sin excepción."},
+  {id:91,cluster:10,type:'likert',inv:false,sim:true,text:"Jamás he cometido un error que afecte a otra persona."},
+  {id:92,cluster:10,type:'likert',inv:false,sim:true,text:"Nunca he sentido tentación de aprovechar una oportunidad indebida."},
+  {id:93,cluster:10,type:'likert',inv:false,sim:true,text:"Siempre actúo correctamente incluso en cualquier situación extrema."},
+  {id:94,cluster:10,type:'likert',inv:false,sim:true,text:"Nunca he exagerado una explicación."},
+  {id:95,cluster:10,type:'likert',inv:false,sim:true,text:"Todas mis decisiones han sido completamente éticas."},
+  {id:96,cluster:10,type:'likert',inv:false,sim:true,text:"Jamás he ocultado información."},
+  {id:97,cluster:10,type:'likert',inv:false,sim:true,text:"Nunca he sentido enojo en el trabajo."},
+  {id:98,cluster:10,type:'likert',inv:false,sim:true,text:"Nunca he dejado algo para después."},
+  // CLUSTER 11: Juicio situacional
+  {id:99,cluster:11,type:'situational',inv:false,text:"Un proveedor te ofrece un beneficio personal por acelerar un trámite.",
+    opts:["Rechazo y reporto a mi superior","Rechazo y no reporto","Escucho la propuesta antes de decidir","Acepto si no afecta el resultado"]},
+  {id:100,cluster:11,type:'situational',inv:false,text:"Detectas que un compañero alteró un registro menor.",
+    opts:["Reporto y documento formalmente","Lo confronto directamente y exijo corrección","No me involucro en el asunto","Lo dejo pasar porque es poco significativo"]},
+];
+
+const CLUSTERS = {
+  1:{name:"Honestidad Normativa",short:"Honestidad",color:"#1e40af"},
+  2:{name:"Conductas Pasadas",short:"Cond. Pasadas",color:"#1d4ed8"},
+  3:{name:"Robo y Apropiación",short:"Robo",color:"#2563eb"},
+  4:{name:"Mentira y Veracidad",short:"Mentira",color:"#3b82f6"},
+  5:{name:"Responsabilidad",short:"Responsab.",color:"#0ea5e9"},
+  6:{name:"Desempeño Laboral",short:"Desempeño",color:"#0284c7"},
+  7:{name:"Personalidad/Autocontrol",short:"Autocontrol",color:"#0369a1"},
+  8:{name:"Soborno y Fraude",short:"Soborno",color:"#155e75"},
+  9:{name:"Incumplimiento",short:"Incumplim.",color:"#164e63"},
+  10:{name:"Control de Simulación",short:"Simulación",color:"#dc2626"},
+  11:{name:"Juicio Situacional",short:"Juicio Situ.",color:"#7c3aed"},
+};
+
+const SCORE_GROUPS = [
+  {id:"honestidad",name:"Honestidad Normativa",clusters:[1],weight:0.15},
+  {id:"conducta",name:"Conductas Pasadas",clusters:[2],weight:0.15},
+  {id:"robo_mentira",name:"Robo y Mentira",clusters:[3,4],weight:0.15},
+  {id:"responsabilidad",name:"Responsabilidad y Desempeño",clusters:[5,6],weight:0.15},
+  {id:"autocontrol",name:"Personalidad y Autocontrol",clusters:[7],weight:0.15},
+  {id:"soborno",name:"Soborno, Fraude e Incumplimiento",clusters:[8,9],weight:0.15},
+  {id:"juicio",name:"Juicio Situacional",clusters:[11],weight:0.10},
+];
+
+const MIRROR_PAIRS = [[3,31],[4,11],[21,30],[41,45],[63,69],[73,78],[81,86]];
+
+const LIKERT_LABELS = ["Totalmente en desacuerdo","En desacuerdo","Neutral","De acuerdo","Totalmente de acuerdo"];
+const FREQ_LABELS = ["Nunca","Rara vez","Algunas veces","Varias veces","Frecuentemente"];
+
+// ==================== STORAGE ====================
+const SK = {users:'ig_users',candidates:'ig_candidates',evaluations:'ig_evals',session:'ig_session'};
+const load = k => JSON.parse(localStorage.getItem(k)||'null');
+const save = (k,v) => localStorage.setItem(k,JSON.stringify(v));
+
+function initStorage(){
+  if(!load(SK.users)){
+    save(SK.users,[{id:'admin1',name:'Administrador',email:'admin@integra.com',password:'Admin2024',role:'admin',created:Date.now()}]);
+  }
+  if(!load(SK.candidates)) save(SK.candidates,[]);
+  if(!load(SK.evaluations)) save(SK.evaluations,[]);
+}
+
+function getUsers(){ return load(SK.users)||[]; }
+function getCandidates(){ return load(SK.candidates)||[]; }
+function getEvals(){ return load(SK.evaluations)||[]; }
+
+function saveCandidate(c){
+  const cs=getCandidates();
+  const i=cs.findIndex(x=>x.id===c.id);
+  i>=0?cs[i]=c:cs.push(c);
+  save(SK.candidates,cs);
+}
+function saveEval(e){
+  const es=getEvals();
+  const i=es.findIndex(x=>x.id===e.id);
+  i>=0?es[i]=e:es.push(e);
+  save(SK.evaluations,es);
+}
+
+function genId(){ return Math.random().toString(36).substr(2,12); }
+function genToken(){ return Math.random().toString(36).substr(2,20)+Math.random().toString(36).substr(2,20); }
+
+// ==================== SCORING ====================
+function calcScores(responses){
+  // Adjusted score per question: 1-5 scale, higher=better integrity
+  const adj={};
+  QUESTIONS.forEach(q=>{
+    if(q.cluster===10||q.cluster===11)return;
+    const r=responses[q.id];
+    if(r===undefined)return;
+    adj[q.id]=q.inv?r:(6-r);
+  });
+
+  // Simulation detection
+  const simQs=QUESTIONS.filter(q=>q.sim);
+  const simVals=simQs.map(q=>responses[q.id]).filter(v=>v!==undefined);
+  const simAvg=simVals.length?simVals.reduce((a,b)=>a+b,0)/simVals.length:0;
+  const simulationFlag=simAvg>4.4;
+
+  // Mirror pair inconsistency
+  let inconsistencies=0;
+  const inconsistentPairs=[];
+  MIRROR_PAIRS.forEach(([a,b])=>{
+    const qa=QUESTIONS.find(q=>q.id===a);
+    const qb=QUESTIONS.find(q=>q.id===b);
+    if(!qa||!qb||responses[a]===undefined||responses[b]===undefined)return;
+    const adjA=qa.inv?responses[a]:(6-responses[a]);
+    const adjB=qb.inv?responses[b]:(6-responses[b]);
+    if(Math.abs(adjA-adjB)>=3){inconsistencies++;inconsistentPairs.push([a,b]);}
+  });
+  const inconsistencyFlag=inconsistencies>=2;
+
+  // Cluster scores (0-100)
+  const clusterScores={};
+  for(let c=1;c<=9;c++){
+    const cqs=QUESTIONS.filter(q=>q.cluster===c);
+    const vals=cqs.map(q=>adj[q.id]).filter(v=>v!==undefined);
+    if(vals.length)clusterScores[c]=(vals.reduce((a,b)=>a+b,0)/vals.length-1)/4*100;
+  }
+
+  // Cluster 11: Situational judgment A=4,B=3,C=1,D=0
+  const sitQs=QUESTIONS.filter(q=>q.cluster===11);
+  const sitScores=sitQs.map(q=>{
+    const r=responses[q.id];
+    if(r===undefined)return null;
+    return [4,3,1,0][r]/4*100;
+  }).filter(v=>v!==null);
+  if(sitScores.length)clusterScores[11]=sitScores.reduce((a,b)=>a+b,0)/sitScores.length;
+
+  // Group scores
+  const groupScores={};
+  SCORE_GROUPS.forEach(g=>{
+    const vals=g.clusters.map(c=>clusterScores[c]).filter(v=>v!==undefined);
+    if(vals.length)groupScores[g.id]=vals.reduce((a,b)=>a+b,0)/vals.length;
+  });
+
+  // Global weighted score
+  let global=0,tw=0;
+  SCORE_GROUPS.forEach(g=>{
+    if(groupScores[g.id]!==undefined){global+=groupScores[g.id]*g.weight;tw+=g.weight;}
+  });
+  if(tw>0)global=global/tw;
+
+  // Penalties
+  let final=global;
+  if(simulationFlag)final-=15;
+  if(inconsistencyFlag)final-=10;
+  final=Math.max(0,Math.min(100,final));
+
+  // Risk level
+  let riskLevel,riskColor,riskLabel,riskDesc;
+  if(final>=85){riskLevel='verde';riskColor='#16a34a';riskLabel='BAJO RIESGO';riskDesc='Contratar / Promover sin restricciones';}
+  else if(final>=70){riskLevel='amarillo';riskColor='#ca8a04';riskLabel='RIESGO MODERADO';riskDesc='Proceder con controles adicionales';}
+  else if(final>=55){riskLevel='naranja';riskColor='#ea580c';riskLabel='RIESGO ALTO';riskDesc='Revisar referencias y restringir puestos sensibles';}
+  else{riskLevel='rojo';riskColor='#dc2626';riskLabel='RIESGO CRÍTICO';riskDesc='No recomendable para posiciones sensibles';}
+
+  return {adj,clusterScores,groupScores,globalScore:global,finalScore:final,
+    simulationFlag,inconsistencyFlag,inconsistencies,inconsistentPairs,simAvg,
+    riskLevel,riskColor,riskLabel,riskDesc};
+}
+
+function generateNarrative(scores,candidate){
+  const {finalScore,riskLevel,clusterScores,simulationFlag,inconsistencyFlag,groupScores}=scores;
+  const f=n=>Math.round(n||0);
+
+  // Fortalezas (top clusters > 70)
+  const fortalezas=[];
+  const riesgos=[];
+  for(let c=1;c<=9;c++){
+    const s=f(clusterScores[c]);
+    const cn=CLUSTERS[c].name;
+    if(s>=72)fortalezas.push(`${cn} (${s}/100)`);
+    else if(s<55)riesgos.push(`${cn} (${s}/100)`);
+  }
+
+  let narrative=`<p>El perfil evaluado bajo la batería INTEGRA-100 muestra un <strong>score global de ${f(finalScore)} puntos</strong>, ubicándose en el nivel de <strong>${scores.riskLabel}</strong>.</p>`;
+
+  if(fortalezas.length)narrative+=`<p><strong>Fortalezas conductuales:</strong> El evaluado presenta indicadores positivos en ${fortalezas.join(', ')}, lo que sugiere una orientación favorable hacia la integridad en estas dimensiones.</p>`;
+  if(riesgos.length)narrative+=`<p><strong>Áreas de atención:</strong> Se identifican señales de riesgo en ${riesgos.join(', ')}. Estas dimensiones ameritan una revisión más profunda mediante entrevistas conductuales y verificación de referencias.</p>`;
+
+  if(simulationFlag)narrative+=`<p><strong>⚠ Advertencia de simulación:</strong> El patrón de respuestas en el cluster de consistencia sugiere que el evaluado pudo haber intentado proyectar una imagen excesivamente positiva. Se recomienda aplicar prueba complementaria. Penalización aplicada: -15 puntos.</p>`;
+  if(inconsistencyFlag)narrative+=`<p><strong>⚠ Inconsistencia detectada:</strong> Se identificaron contradicciones significativas en ${scores.inconsistencies} pares de preguntas espejo, lo que puede indicar falta de atención o respuestas no reflexivas. Penalización aplicada: -10 puntos.</p>`;
+
+  // Dictamen
+  const dictamenes={
+    verde:`Perfil con sólida orientación ética y adecuado autocontrol. Las respuestas muestran consistencia en valores de integridad laboral. <strong>Recomendado para el proceso de selección/promoción</strong>.`,
+    amarillo:`Perfil con orientación normativa aceptable pero con algunas señales de racionalización. <strong>Proceder con verificación adicional de referencias y controles de supervisión</strong>.`,
+    naranja:`Perfil con señales moderadas-altas de riesgo conductual. Se identifican patrones de racionalización del incumplimiento. <strong>No recomendable para puestos de alta responsabilidad o acceso a recursos críticos sin supervisión estrecha</strong>.`,
+    rojo:`Perfil con indicadores de alto riesgo ético. El patrón de respuestas sugiere tendencia hacia conductas contraproducentes. <strong>No recomendable para el proceso de selección/promoción en posiciones sensibles</strong>.`
+  };
+  narrative+=`<p><strong>Dictamen:</strong> ${dictamenes[riskLevel]}</p>`;
+
+  return narrative;
+}
+
+// ==================== ROUTER ====================
+let currentView='';
+let currentUser=null;
+let chartInstances={};
+
+function showView(id){
+  document.querySelectorAll('#vLogin,#app,#vLanding,#vEval,#vDone').forEach(el=>el.classList.add('hidden'));
+  if(id==='login'){document.getElementById('vLogin').classList.remove('hidden');return;}
+  if(id==='landing'||id==='eval'||id==='done'){
+    document.getElementById('v'+id.charAt(0).toUpperCase()+id.slice(1)).classList.remove('hidden');return;
+  }
+  document.getElementById('app').classList.remove('hidden');
+  ['vDashboard','vCandidates','vCreate','vHistory','vReport'].forEach(v=>document.getElementById(v).classList.add('hidden'));
+  const map={dashboard:'vDashboard',candidates:'vCandidates',create:'vCreate',history:'vHistory',report:'vReport'};
+  if(map[id])document.getElementById(map[id]).classList.remove('hidden');
+}
+
+function nav(view,el){
+  currentView=view;
+  document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+  if(el)el.classList.add('active');
+  else{const btn=document.querySelector(`.nav-item[data-view="${view}"]`);if(btn)btn.classList.add('active');}
+  const titles={dashboard:'Dashboard',candidates:'Candidatos',create:'Nuevo Candidato',history:'Historial de Evaluaciones',report:'Reporte de Evaluación'};
+  document.getElementById('topbarTitle').textContent=titles[view]||'INTEGRA360';
+  showView(view);
+  if(view==='dashboard')renderDashboard();
+  else if(view==='candidates')renderCandidates();
+  else if(view==='history')renderHistory();
+}
+
+// ==================== AUTH ====================
+function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  const users=getUsers();
+  const user=users.find(u=>u.email===email&&u.password===pass&&u.role==='admin');
+  if(!user){document.getElementById('loginErr').classList.remove('hidden');return;}
+  document.getElementById('loginErr').classList.add('hidden');
+  currentUser=user;
+  save(SK.session,user.id);
+  document.getElementById('sbName').textContent=user.name;
+  document.getElementById('sbAvatar').textContent=user.name.charAt(0).toUpperCase();
+  nav('dashboard');
+}
+
+function doLogout(){
+  currentUser=null;
+  localStorage.removeItem(SK.session);
+  showView('login');
+}
+
+// ==================== DASHBOARD ====================
+function renderDashboard(){
+  const evals=getEvals();
+  const candidates=getCandidates();
+  const completed=evals.filter(e=>e.completed);
+  const scores=completed.map(e=>e.scores.finalScore);
+  const avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0;
+  const riskCounts={verde:0,amarillo:0,naranja:0,rojo:0};
+  completed.forEach(e=>riskCounts[e.scores.riskLevel]=(riskCounts[e.scores.riskLevel]||0)+1);
+
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Total Candidatos</div><div class="stat-val">${candidates.length}</div><div class="stat-sub">Registrados en el sistema</div></div>
+    <div class="stat-card"><div class="stat-label">Evaluaciones Completadas</div><div class="stat-val">${completed.length}</div><div class="stat-sub">De ${candidates.length} candidatos</div></div>
+    <div class="stat-card"><div class="stat-label">Score Promedio</div><div class="stat-val" style="color:${avg>=70?'#16a34a':avg>=55?'#ea580c':'#dc2626'}">${avg}</div><div class="stat-sub">Escala 0–100</div></div>
+    <div class="stat-card"><div class="stat-label">Pendientes</div><div class="stat-val" style="color:#ca8a04">${candidates.length-completed.length}</div><div class="stat-sub">Sin completar</div></div>
+  `;
+
+  // Risk chart
+  if(chartInstances.risk){chartInstances.risk.destroy();}
+  const rCtx=document.getElementById('chartRisk').getContext('2d');
+  chartInstances.risk=new Chart(rCtx,{
+    type:'doughnut',
+    data:{labels:['Bajo Riesgo','Moderado','Alto','Crítico'],
+      datasets:[{data:[riskCounts.verde,riskCounts.amarillo,riskCounts.naranja,riskCounts.rojo],
+        backgroundColor:['#16a34a','#ca8a04','#ea580c','#dc2626'],borderWidth:0}]},
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{family:'Barlow',size:12},padding:12}}}}
+  });
+
+  // Dimensions chart
+  const dimAvgs={};
+  SCORE_GROUPS.forEach(g=>{
+    const vals=completed.map(e=>e.scores.groupScores[g.id]).filter(v=>v!==undefined);
+    dimAvgs[g.id]=vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):0;
+  });
+  if(chartInstances.dim){chartInstances.dim.destroy();}
+  const dCtx=document.getElementById('chartDim').getContext('2d');
+  chartInstances.dim=new Chart(dCtx,{
+    type:'bar',
+    data:{labels:SCORE_GROUPS.map(g=>g.name.split(' ').slice(0,2).join(' ')),
+      datasets:[{data:SCORE_GROUPS.map(g=>dimAvgs[g.id]),
+        backgroundColor:'rgba(37,99,235,0.8)',borderRadius:6}]},
+    options:{responsive:true,indexAxis:'y',plugins:{legend:{display:false}},
+      scales:{x:{min:0,max:100,grid:{color:'rgba(0,0,0,.05)'}},y:{grid:{display:false},ticks:{font:{family:'Barlow',size:11}}}}}
+  });
+
+  // Recent evals
+  const recent=completed.slice(-5).reverse();
+  if(!recent.length){
+    document.getElementById('recentEvals').innerHTML='<div class="empty-state"><p>No hay evaluaciones completadas aún</p></div>';return;
+  }
+  const rows=recent.map(e=>{
+    const c=getCandidates().find(x=>x.id===e.candidateId)||{};
+    const {riskColor,riskLabel,riskLevel,finalScore}=e.scores;
+    const bc={verde:'badge-green',amarillo:'badge-yellow',naranja:'badge-orange',rojo:'badge-red'}[riskLevel]||'badge-gray';
+    return `<tr>
+      <td><strong>${c.name||'—'}</strong></td>
+      <td>${c.position||'—'}</td>
+      <td><strong>${Math.round(finalScore)}</strong>/100</td>
+      <td><span class="badge ${bc}">${riskLabel}</span></td>
+      <td>${fmtDate(e.completedAt)}</td>
+      <td><button class="btn btn-secondary btn-sm" onclick="viewReport('${e.id}')">Ver Reporte</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('recentEvals').innerHTML=`<table><thead><tr><th>Nombre</th><th>Puesto</th><th>Score</th><th>Riesgo</th><th>Fecha</th><th>Acción</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ==================== CANDIDATES ====================
+function renderCandidates(){
+  const search=(document.getElementById('fSearch')?.value||'').toLowerCase();
+  const status=document.getElementById('fStatus')?.value||'';
+  let candidates=getCandidates();
+  const evals=getEvals();
+  if(search)candidates=candidates.filter(c=>c.name.toLowerCase().includes(search)||c.position.toLowerCase().includes(search));
+  if(status==='completed')candidates=candidates.filter(c=>evals.some(e=>e.candidateId===c.id&&e.completed));
+  else if(status==='pending')candidates=candidates.filter(c=>!evals.some(e=>e.candidateId===c.id&&e.completed));
+
+  if(!candidates.length){
+    document.getElementById('candidatesTable').innerHTML='<div class="empty-state"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg><h3>Sin candidatos</h3><p>Crea el primer candidato para comenzar</p></div>';
+    return;
+  }
+
+  const rows=candidates.map(c=>{
+    const ev=evals.find(e=>e.candidateId===c.id&&e.completed);
+    const status=ev?'completed':'pending';
+    const badge=status==='completed'?'<span class="badge badge-green">Completado</span>':'<span class="badge badge-gray">Pendiente</span>';
+    const link=`${location.origin}${location.pathname}?token=${c.token}`;
+    const scoreCol=ev?`<strong>${Math.round(ev.scores.finalScore)}</strong>/100`:'—';
+    const riskCol=ev?`<span class="badge ${['badge-green','badge-yellow','badge-orange','badge-red'][{verde:0,amarillo:1,naranja:2,rojo:3}[ev.scores.riskLevel]]}">${ev.scores.riskLabel}</span>`:'—';
+    const actions=ev
+      ?`<button class="btn btn-secondary btn-sm" onclick="viewReport('${ev.id}')">Ver Reporte</button>`
+      :`<button class="btn btn-secondary btn-sm" onclick="copyLinkDirect('${link}')">📋 Copiar Link</button>`;
+    return `<tr>
+      <td><strong>${c.name}</strong><div class="text-xs text-gray">${c.email||''}</div></td>
+      <td>${c.position}<div class="text-xs text-gray">${c.dept||''}</div></td>
+      <td>${badge}</td>
+      <td>${scoreCol}</td>
+      <td>${riskCol}</td>
+      <td>${fmtDate(c.createdAt)}</td>
+      <td>${actions}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('candidatesTable').innerHTML=`<table><thead><tr><th>Nombre</th><th>Puesto</th><th>Estado</th><th>Score</th><th>Riesgo</th><th>Creado</th><th>Acción</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ==================== CREATE CANDIDATE ====================
+function createCandidate(){
+  const name=document.getElementById('cName').value.trim();
+  const position=document.getElementById('cPosition').value.trim();
+  if(!name||!position){
+    document.getElementById('createMsg').innerHTML='<div class="alert alert-err">Complete los campos requeridos (Nombre y Puesto).</div>';return;
+  }
+  const token=genToken();
+  const c={
+    id:genId(),name,
+    email:document.getElementById('cEmail').value.trim(),
+    position,
+    dept:document.getElementById('cDept').value.trim(),
+    notes:document.getElementById('cNotes').value.trim(),
+    canGoBack:document.getElementById('cCanGoBack').value==='true',
+    token,createdAt:Date.now(),createdBy:currentUser?.id
+  };
+  saveCandidate(c);
+  const link=`${location.origin}${location.pathname}?token=${token}`;
+  document.getElementById('createMsg').innerHTML='';
+  document.getElementById('generatedLink').textContent=link;
+  document.getElementById('generatedLink').setAttribute('data-link',link);
+  document.getElementById('linkResult').classList.remove('hidden');
+  ['cName','cEmail','cPosition','cDept','cNotes'].forEach(id=>document.getElementById(id).value='');
+}
+function copyLink(){
+  const link=document.getElementById('generatedLink').getAttribute('data-link');
+  copyLinkDirect(link);
+}
+function copyLinkDirect(link){
+  navigator.clipboard?.writeText(link).then(()=>{
+    const tmp=document.createElement('div');
+    tmp.className='alert alert-ok';tmp.style.cssText='position:fixed;top:20px;right:20px;z-index:9999;max-width:320px';
+    tmp.textContent='✓ Enlace copiado al portapapeles';
+    document.body.appendChild(tmp);setTimeout(()=>tmp.remove(),2500);
+  }).catch(()=>prompt('Copia este enlace:',link));
+}
+
+// ==================== HISTORY ====================
+function renderHistory(){
+  const search=(document.getElementById('hSearch')?.value||'').toLowerCase();
+  const risk=document.getElementById('hRisk')?.value||'';
+  const from=document.getElementById('hFrom')?.value;
+  const to=document.getElementById('hTo')?.value;
+  let evals=getEvals().filter(e=>e.completed);
+  const candidates=getCandidates();
+  if(search){evals=evals.filter(e=>{const c=candidates.find(x=>x.id===e.candidateId)||{};return (c.name||'').toLowerCase().includes(search)||(c.position||'').toLowerCase().includes(search);});}
+  if(risk)evals=evals.filter(e=>e.scores.riskLevel===risk);
+  if(from)evals=evals.filter(e=>e.completedAt>=new Date(from).getTime());
+  if(to)evals=evals.filter(e=>e.completedAt<=new Date(to).getTime()+86399999);
+  evals.sort((a,b)=>b.completedAt-a.completedAt);
+
+  if(!evals.length){
+    document.getElementById('historyTable').innerHTML='<div class="empty-state"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg><h3>Sin resultados</h3><p>No hay evaluaciones que coincidan con los filtros</p></div>';return;
+  }
+
+  const rows=evals.map(e=>{
+    const c=candidates.find(x=>x.id===e.candidateId)||{};
+    const {riskLevel,riskLabel,finalScore,simulationFlag,inconsistencyFlag}=e.scores;
+    const bc={verde:'badge-green',amarillo:'badge-yellow',naranja:'badge-orange',rojo:'badge-red'}[riskLevel];
+    const flags=[];
+    if(simulationFlag)flags.push('<span class="badge badge-red" title="Posible simulación">SIM</span>');
+    if(inconsistencyFlag)flags.push('<span class="badge badge-orange" title="Inconsistencias">INC</span>');
+    return `<tr>
+      <td><strong>${c.name||'—'}</strong></td>
+      <td>${c.position||'—'}</td>
+      <td>${c.dept||'—'}</td>
+      <td><strong>${Math.round(finalScore)}</strong>/100</td>
+      <td><span class="badge ${bc}">${riskLabel}</span></td>
+      <td>${flags.join(' ')||'—'}</td>
+      <td>${fmtDate(e.completedAt)}</td>
+      <td><button class="btn btn-secondary btn-sm" onclick="viewReport('${e.id}')">Ver Reporte</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('historyTable').innerHTML=`<table><thead><tr><th>Nombre</th><th>Puesto</th><th>Dept.</th><th>Score</th><th>Riesgo</th><th>Alertas</th><th>Fecha</th><th>Acción</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ==================== REPORT ====================
+function viewReport(evalId){
+  const evals=getEvals();
+  const ev=evals.find(e=>e.id===evalId);
+  if(!ev){alert('Evaluación no encontrada');return;}
+  const c=getCandidates().find(x=>x.id===ev.candidateId)||{};
+  const scores=ev.scores;
+  const f=n=>Math.round(n||0);
+
+  const {finalScore,riskLevel,riskColor,riskLabel,riskDesc,clusterScores,groupScores,simulationFlag,inconsistencyFlag,simAvg,globalScore}=scores;
+
+  // Build gauge SVG
+  const gaugeAngle=(finalScore/100)*180;
+  const gaugeColor=riskColor;
+  function polarToXY(angle,r){const a=(angle-90)*Math.PI/180;return{x:100+r*Math.cos(a),y:100+r*Math.sin(a)};}
+  function arcPath(start,end,r){const s=polarToXY(start,r);const e2=polarToXY(end,r);const large=end-start>180?1:0;return `M ${s.x} ${s.y} A ${r} ${r} 0 ${large} 1 ${e2.x} ${e2.y}`;}
+  const needleAngle=gaugeAngle-90;
+  const needleTip=polarToXY(needleAngle,62);
+  const gaugeSVG=`<svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" style="width:200px">
+    <path d="${arcPath(-90,90,72)}" fill="none" stroke="#e5e7eb" stroke-width="14" stroke-linecap="round"/>
+    <path d="${arcPath(-90,gaugeAngle-90,72)}" fill="none" stroke="${gaugeColor}" stroke-width="14" stroke-linecap="round"/>
+    <line x1="100" y1="100" x2="${needleTip.x}" y2="${needleTip.y}" stroke="#0f2444" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="100" cy="100" r="6" fill="#0f2444"/>
+    <text x="100" y="118" text-anchor="middle" font-family="'Barlow Condensed'" font-size="10" fill="#6b7280">0</text>
+    <text x="28" y="100" text-anchor="middle" font-family="'Barlow Condensed'" font-size="8" fill="#dc2626">CR</text>
+    <text x="172" y="100" text-anchor="middle" font-family="'Barlow Condensed'" font-size="8" fill="#16a34a">OK</text>
+  </svg>`;
+
+  // Cluster bars
+  const clusterBarsHTML=Object.entries(clusterScores).filter(([c])=>parseInt(c)<=9).map(([c,s])=>{
+    const ci=CLUSTERS[parseInt(c)];
+    const pct=f(s);
+    const color=pct>=70?'#16a34a':pct>=55?'#ea580c':'#dc2626';
+    return `<div class="cl-bar"><div class="cl-bar-hdr"><span class="cl-bar-name">${ci.name}</span><span class="cl-bar-val">${pct}/100</span></div><div class="cl-bar-track"><div class="cl-bar-fill" style="width:${pct}%;background:${color}"></div></div></div>`;
+  }).join('');
+
+  // Group bars for radar
+  const radarId='radarChart_'+evalId;
+  const barId='barChart_'+evalId;
+
+  const narrative=generateNarrative(scores,c);
+  const semVals={verde:finalScore>=85,amarillo:finalScore>=70&&finalScore<85,naranja:finalScore>=55&&finalScore<70,rojo:finalScore<55};
+
+  document.getElementById('reportContent').innerHTML=`
+    <!-- COVER -->
+    <div class="rpt-cover">
+      <div class="rpt-cover-logo">INTEGRA<span>360</span></div>
+      <h1>Reporte Ejecutivo de Integridad</h1>
+      <div class="rpt-cover-sub">Batería Integral de Riesgo Ético, Confiabilidad y Juicio Laboral · INTEGRA-100 v1.0</div>
+      <div class="rpt-cover-meta">
+        <div class="rpt-field"><label>Evaluado/a</label><p>${c.name||'—'}</p></div>
+        <div class="rpt-field"><label>Puesto</label><p>${c.position||'—'}</p></div>
+        <div class="rpt-field"><label>Departamento</label><p>${c.dept||'—'}</p></div>
+        <div class="rpt-field"><label>Fecha de Evaluación</label><p>${fmtDate(ev.completedAt)}</p></div>
+        <div class="rpt-field"><label>Código de Reporte</label><p>INTEGRA-${ev.id.substr(0,8).toUpperCase()}</p></div>
+        <div class="rpt-field"><label>Nivel de Confidencialidad</label><p>CONFIDENCIAL</p></div>
+      </div>
+      <div class="rpt-confidential">Uso confidencial · El reporte solo puede ser visualizado por administradores autorizados · INTEGRA360 © ${new Date().getFullYear()}</div>
+    </div>
+
+    <!-- EXECUTIVE SUMMARY -->
+    <div class="rpt-section">
+      <div class="rpt-h2">Resumen Ejecutivo</div>
+      <div class="g3">
+        <div class="text-center">
+          <div class="gauge-wrap">
+            ${gaugeSVG}
+            <div class="score-big" style="color:${riskColor}">${f(finalScore)}</div>
+            <div class="text-xs text-gray">SCORE GLOBAL / 100</div>
+          </div>
+        </div>
+        <div>
+          <div style="margin-bottom:14px">
+            <div class="text-xs text-gray mb-4">NIVEL DE RIESGO</div>
+            <div class="semaforo">
+              <div class="sem-light ${semVals.verde?'on':'off'}" style="background:#dcfce7;color:#16a34a">🟢<br>Bajo</div>
+              <div class="sem-light ${semVals.amarillo?'on':'off'}" style="background:#fef3c7;color:#92400e">🟡<br>Mod.</div>
+              <div class="sem-light ${semVals.naranja?'on':'off'}" style="background:#ffedd5;color:#ea580c">🟠<br>Alto</div>
+              <div class="sem-light ${semVals.rojo?'on':'off'}" style="background:#fee2e2;color:#dc2626">🔴<br>Crít.</div>
+            </div>
+          </div>
+          <div style="background:var(--g50);border-radius:10px;padding:14px;margin-top:12px">
+            <div class="text-xs text-gray">DICTAMEN</div>
+            <div style="font-weight:700;font-size:15px;color:${riskColor};margin-top:4px">${riskLabel}</div>
+            <div style="font-size:12px;color:var(--g600);margin-top:4px">${riskDesc}</div>
+          </div>
+          ${globalScore!==finalScore?`<div class="text-xs text-gray mt-2">Score base: ${f(globalScore)} → Penalizaciones aplicadas: ${f(globalScore-finalScore)} pts</div>`:''}
+        </div>
+        <div>
+          <div class="text-xs text-gray mb-4">ALERTAS DETECTADAS</div>
+          <div class="flags-grid" style="grid-template-columns:1fr">
+            <div class="flag-item ${simulationFlag?'on':'off'}">
+              <div class="flag-title">${simulationFlag?'⚠':'✓'} Simulación</div>
+              <div class="flag-desc">${simulationFlag?`Promedio cluster consistencia: ${simAvg.toFixed(2)} > 4.4`:'Sin señales de simulación'}</div>
+            </div>
+            <div class="flag-item ${inconsistencyFlag?'on':'off'}">
+              <div class="flag-title">${inconsistencyFlag?'⚠':'✓'} Inconsistencia</div>
+              <div class="flag-desc">${inconsistencyFlag?`${scores.inconsistencies} pares espejo contradictorios`:'Respuestas consistentes'}</div>
+            </div>
+            <div class="flag-item ${finalScore<55?'on':'off'}">
+              <div class="flag-title">${finalScore<55?'⚠':'✓'} Riesgo de Fraude</div>
+              <div class="flag-desc">${finalScore<55?'Score crítico — verificar referencias':'Score dentro de rango aceptable'}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="rpt-section">
+      <div class="rpt-h2">Análisis por Dimensiones</div>
+      <div class="g2">
+        <div>
+          <div class="text-xs text-gray mb-4" style="font-weight:700;text-transform:uppercase">Perfil Radar por Dimensión</div>
+          <canvas id="${radarId}" height="220"></canvas>
+        </div>
+        <div>
+          <div class="text-xs text-gray mb-4" style="font-weight:700;text-transform:uppercase">Score por Dimensión</div>
+          <canvas id="${barId}" height="220"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLUSTER DETAIL -->
+    <div class="rpt-section">
+      <div class="rpt-h2">Detalle por Cluster</div>
+      ${clusterBarsHTML}
+    </div>
+
+    <!-- INTERPRETATION -->
+    <div class="rpt-section">
+      <div class="rpt-h2">Interpretación Narrativa</div>
+      <div class="narrative">${narrative}</div>
+    </div>
+
+    <!-- TECHNICAL -->
+    <div class="rpt-section">
+      <div class="rpt-h2">Anexo Técnico</div>
+      <div style="font-size:12px;color:var(--g600);line-height:1.7">
+        <p><strong>Instrumento:</strong> INTEGRA-100 v1.0 — Batería Integral de Riesgo Ético, Confiabilidad y Juicio Laboral</p>
+        <p><strong>Escalas:</strong> Likert 1-5 (Totalmente en desacuerdo → Totalmente de acuerdo), Frecuencia 1-5 (Nunca → Frecuentemente), Juicio Situacional (A=4, B=3, C=1, D=0)</p>
+        <p><strong>Puntuación:</strong> Reactivos invertidos calificados con fórmula 6-respuesta. Score por cluster normalizado 0-100. Score global ponderado por dimensión.</p>
+        <p><strong>Ponderación:</strong> Honestidad Normativa 15% · Conductas Pasadas 15% · Robo y Mentira 15% · Responsabilidad y Desempeño 15% · Personalidad/Autocontrol 15% · Soborno/Fraude/Incumplimiento 15% · Juicio Situacional 10%</p>
+        <p><strong>Detección de simulación:</strong> Items 89-98. Activación si promedio > 4.4. Penalización: -15 puntos.</p>
+        <p><strong>Detección de inconsistencia:</strong> Pares espejo comparados. Activación si ≥2 contradicciones (|adj_A - adj_B| ≥ 3). Penalización: -10 puntos.</p>
+        <p><strong>Nota:</strong> Este instrumento es una herramienta de apoyo a la toma de decisiones. No debe utilizarse como único criterio de selección o desvinculación. Los resultados deben interpretarse por personal calificado en conjunto con otras fuentes de información.</p>
+        <p><strong>Referencia:</strong> Berry, Sackett & Wiemann (2007); Ones, Viswesvaran & Schmidt (1993). Enfoque mixto de reactivos directos, rasgos, consistencia y juicio situacional.</p>
+      </div>
+    </div>
+  `;
+
+  // Render charts
+  setTimeout(()=>{
+    const rCtx=document.getElementById(radarId);
+    const bCtx=document.getElementById(barId);
+    if(rCtx&&!chartInstances[radarId]){
+      chartInstances[radarId]=new Chart(rCtx,{
+        type:'radar',
+        data:{labels:SCORE_GROUPS.map(g=>g.name.split(' ').slice(0,2).join('\n')),
+          datasets:[{data:SCORE_GROUPS.map(g=>f(groupScores[g.id]||0)),
+            backgroundColor:'rgba(37,99,235,0.15)',borderColor:'#2563eb',
+            pointBackgroundColor:'#2563eb',pointRadius:4,tension:0.2}]},
+        options:{responsive:true,scales:{r:{min:0,max:100,ticks:{stepSize:25,font:{family:'Barlow',size:10}},pointLabels:{font:{family:'Barlow',size:10,weight:'600'}},grid:{color:'rgba(0,0,0,.08)'},angleLines:{color:'rgba(0,0,0,.08)'}}},plugins:{legend:{display:false}}}
+      });
+    }
+    if(bCtx&&!chartInstances[barId]){
+      const gColors=SCORE_GROUPS.map(g=>{const v=f(groupScores[g.id]||0);return v>=70?'rgba(22,163,74,.8)':v>=55?'rgba(234,88,12,.8)':'rgba(220,38,38,.8)';});
+      chartInstances[barId]=new Chart(bCtx,{
+        type:'bar',
+        data:{labels:SCORE_GROUPS.map(g=>g.name.split(' y ')[0]),
+          datasets:[{data:SCORE_GROUPS.map(g=>f(groupScores[g.id]||0)),backgroundColor:gColors,borderRadius:6}]},
+        options:{responsive:true,indexAxis:'y',plugins:{legend:{display:false}},
+          scales:{x:{min:0,max:100,grid:{color:'rgba(0,0,0,.05)'}},y:{grid:{display:false},ticks:{font:{family:'Barlow',size:11}}}}}
+      });
+    }
+  },150);
+
+  nav('report');
+}
+
+// ==================== EXCEL EXPORT ====================
+function exportExcel(){
+  const evals=getEvals().filter(e=>e.completed);
+  const candidates=getCandidates();
+  const rows=[['Nombre','Puesto','Departamento','Score Global','Nivel Riesgo','Simulación','Inconsistencia','Score Base','Fecha',
+    ...SCORE_GROUPS.map(g=>g.name),
+    ...Array.from({length:9},(_,i)=>`Cluster ${i+1}: ${CLUSTERS[i+1].name}`)
+  ]];
+  evals.forEach(ev=>{
+    const c=candidates.find(x=>x.id===ev.candidateId)||{};
+    const s=ev.scores;
+    rows.push([
+      c.name||'',c.position||'',c.dept||'',
+      Math.round(s.finalScore),s.riskLabel,
+      s.simulationFlag?'SÍ':'NO',s.inconsistencyFlag?'SÍ':'NO',
+      Math.round(s.globalScore),fmtDate(ev.completedAt),
+      ...SCORE_GROUPS.map(g=>Math.round(s.groupScores[g.id]||0)),
+      ...Array.from({length:9},(_,i)=>Math.round(s.clusterScores[i+1]||0))
+    ]);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Evaluaciones INTEGRA');
+  XLSX.writeFile(wb,`INTEGRA360_Resultados_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// ==================== EVAL (CANDIDATE) ====================
+let evalState={
+  candidate:null,
+  responses:{},
+  currentIdx:0,
+  started:false,
+};
+
+function loadCandidateView(){
+  const params=new URLSearchParams(location.search);
+  const token=params.get('token');
+  if(!token)return false;
+  const candidates=getCandidates();
+  const c=candidates.find(x=>x.token===token);
+  if(!c){
+    document.body.innerHTML='<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0f2444;color:white;font-family:Barlow,sans-serif;text-align:center;padding:20px"><div><div style="font-family:Barlow Condensed,sans-serif;font-size:32px;font-weight:900;margin-bottom:16px">INTEGRA<span style="color:#0ea5e9">360</span></div><h2 style="font-size:20px;margin-bottom:8px">Enlace no válido</h2><p style="color:rgba(255,255,255,.6);font-size:14px">Este enlace de evaluación no es válido o ha expirado.<br>Contacte al área de Recursos Humanos.</p></div></div>';
+    return true;
+  }
+
+  // Check if already completed
+  const evals=getEvals();
+  const existing=evals.find(e=>e.candidateId===c.id&&e.completed);
+  if(existing){
+    document.body.innerHTML='<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f0fdf4;font-family:Barlow,sans-serif"><div style="background:white;border-radius:20px;padding:52px 44px;max-width:460px;width:90%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.08)"><div style="width:76px;height:76px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 20px"><svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="#16a34a" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><h1 style="font-family:Barlow Condensed,sans-serif;font-size:30px;font-weight:900;color:#0f2444;margin-bottom:10px">Evaluación Ya Completada</h1><p style="font-size:13px;color:#6b7280">Ya completó esta evaluación anteriormente. Si tiene dudas, contacte al área de Recursos Humanos.</p></div></div>';
+    return true;
+  }
+
+  evalState.candidate=c;
+  // Check for saved progress
+  const savedProgress=localStorage.getItem('ig_eval_progress_'+c.id);
+  if(savedProgress){
+    try{const p=JSON.parse(savedProgress);evalState.responses=p.responses||{};evalState.currentIdx=p.currentIdx||0;}catch(e){}
+  }
+
+  // Show landing
+  document.getElementById('landInfo').innerHTML=`
+    <div class="ci-row"><span class="ci-key">Evaluado/a:</span><span class="ci-val">${c.name}</span></div>
+    <div class="ci-row"><span class="ci-key">Puesto:</span><span class="ci-val">${c.position}</span></div>
+    ${c.dept?`<div class="ci-row"><span class="ci-key">Departamento:</span><span class="ci-val">${c.dept}</span></div>`:''}
+    <div class="ci-row"><span class="ci-key">Instrumento:</span><span class="ci-val">INTEGRA-100 v1.0</span></div>
+    <div class="ci-row"><span class="ci-key">Total de preguntas:</span><span class="ci-val">100</span></div>
+  `;
+  document.getElementById('noBackMsg').textContent=c.canGoBack?'podrá regresar a respuestas anteriores':'NO podrá regresar a preguntas anteriores';
+  showView('landing');
+  return true;
+}
+
+function startEval(){
+  showView('eval');
+  if(Object.keys(evalState.responses).length>0){
+    renderQuestion(evalState.currentIdx);
+  }else{
+    evalState.currentIdx=0;
+    renderQuestion(0);
+  }
+}
+
+function renderQuestion(idx){
+  evalState.currentIdx=idx;
+  const q=QUESTIONS[idx];
+  const total=QUESTIONS.length;
+  const pct=Math.round((idx/total)*100);
+
+  document.getElementById('evalProgFill').style.width=pct+'%';
+  document.getElementById('evalProgTxt').textContent=`${idx+1} / ${total}`;
+  document.getElementById('evalCluster').textContent=CLUSTERS[q.cluster].name;
+  document.getElementById('evalQNum').textContent=`Pregunta ${idx+1} de ${total}`;
+  document.getElementById('evalQText').textContent=q.text;
+
+  const c=evalState.candidate;
+  const canGoBack=c?.canGoBack;
+  const prevBtn=document.getElementById('btnPrev');
+  prevBtn.style.display=canGoBack&&idx>0?'inline-flex':'none';
+
+  const answered=Object.keys(evalState.responses).length;
+  document.getElementById('evalAnswerCount').textContent=`${answered} respondidas`;
+
+  const nextBtn=document.getElementById('btnNext');
+  nextBtn.textContent=idx===total-1?'Finalizar':'Siguiente →';
+
+  let optHtml='';
+  if(q.type==='likert'||q.type==='frequency'){
+    const labels=q.type==='likert'?LIKERT_LABELS:FREQ_LABELS;
+    const cur=evalState.responses[q.id];
+    optHtml=`<div class="likert-row">${[1,2,3,4,5].map(v=>`
+      <button class="l-opt ${cur===v?'sel':''}" onclick="selectAnswer(${q.id},${v})">
+        <span class="l-num">${v}</span>
+        <span class="l-lbl">${labels[v-1].split(' ')[0]}</span>
+      </button>`).join('')}</div>
+    <div class="l-anchors"><span>${q.type==='likert'?'Totalmente en desacuerdo':'Nunca'}</span><span>${q.type==='likert'?'Totalmente de acuerdo':'Frecuentemente'}</span></div>`;
+  } else if(q.type==='situational'){
+    const cur=evalState.responses[q.id];
+    optHtml=`<div class="sit-opts">${q.opts.map((o,i)=>`
+      <button class="s-opt ${cur===i?'sel':''}" onclick="selectAnswer(${q.id},${i})">
+        <span class="s-letter">${'ABCD'[i]}</span>
+        <span>${o}</span>
+      </button>`).join('')}</div>`;
+  }
+  document.getElementById('evalOptions').innerHTML=optHtml;
+}
+
+function selectAnswer(qId,val){
+  evalState.responses[qId]=val;
+  // Save progress
+  if(evalState.candidate){
+    localStorage.setItem('ig_eval_progress_'+evalState.candidate.id,JSON.stringify({responses:evalState.responses,currentIdx:evalState.currentIdx}));
+  }
+  // Re-render to update selection visuals
+  renderQuestion(evalState.currentIdx);
+}
+
+function evalNext(){
+  const idx=evalState.currentIdx;
+  const q=QUESTIONS[idx];
+  if(evalState.responses[q.id]===undefined){
+    const div=document.getElementById('evalOptions');
+    div.style.outline='2px solid #dc2626';div.style.borderRadius='12px';
+    setTimeout(()=>{div.style.outline='';},800);
+    return;
+  }
+  if(idx===QUESTIONS.length-1){
+    submitEval();return;
+  }
+  renderQuestion(idx+1);
+}
+
+function evalPrev(){
+  if(evalState.currentIdx>0)renderQuestion(evalState.currentIdx-1);
+}
+
+function submitEval(){
+  const c=evalState.candidate;
+  if(!c)return;
+  const scores=calcScores(evalState.responses);
+  const ev={
+    id:genId(),candidateId:c.id,
+    responses:evalState.responses,
+    scores,completed:true,completedAt:Date.now()
+  };
+  saveEval(ev);
+  // Clear progress
+  localStorage.removeItem('ig_eval_progress_'+c.id);
+  showView('done');
+}
+
+// ==================== MODAL ====================
+function showModal(title,msg,onConfirm){
+  document.getElementById('modalTitle').textContent=title;
+  document.getElementById('modalMsg').textContent=msg;
+  document.getElementById('modalConfirmBtn').onclick=()=>{closeModal();onConfirm();};
+  document.getElementById('modalOverlay').classList.remove('hidden');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.add('hidden');}
+
+// ==================== UTILS ====================
+function fmtDate(ts){
+  if(!ts)return '—';
+  return new Date(ts).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+// ==================== INIT ====================
+function init(){
+  initStorage();
+  document.getElementById('topbarDate').textContent=new Date().toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  // Check if candidate eval URL
+  if(loadCandidateView())return;
+
+  // Check session
+  const sessionId=load(SK.session);
+  if(sessionId){
+    const users=getUsers();
+    const user=users.find(u=>u.id===sessionId);
+    if(user){
+      currentUser=user;
+      document.getElementById('sbName').textContent=user.name;
+      document.getElementById('sbAvatar').textContent=user.name.charAt(0).toUpperCase();
+      nav('dashboard');
+      return;
+    }
+  }
+  showView('login');
+
+  // Keyboard login
+  document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+  document.getElementById('loginEmail').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+}
+
+// Seed demo data for demo purposes
+function seedDemoData(){
+  const candidates=getCandidates();
+  if(candidates.length>0)return; // already seeded
+  const demoCandidates=[
+    {id:'demo1',name:'María López García',position:'Gerente de Finanzas',dept:'Finanzas',email:'maria@empresa.com',token:'demo_token_001_xxxx_yyyy',canGoBack:false,createdAt:Date.now()-7*86400000,createdBy:'admin1'},
+    {id:'demo2',name:'Carlos Ramírez Vega',position:'Analista de Compras',dept:'Adquisiciones',email:'carlos@empresa.com',token:'demo_token_002_xxxx_yyyy',canGoBack:false,createdAt:Date.now()-5*86400000,createdBy:'admin1'},
+    {id:'demo3',name:'Ana Jiménez Torres',position:'Coordinadora RR.HH.',dept:'Recursos Humanos',email:'ana@empresa.com',token:'demo_token_003_xxxx_yyyy',canGoBack:false,createdAt:Date.now()-3*86400000,createdBy:'admin1'},
+    {id:'demo4',name:'Roberto Silva Paz',position:'Jefe de Operaciones',dept:'Operaciones',email:'roberto@empresa.com',token:'demo_token_004_xxxx_yyyy',canGoBack:false,createdAt:Date.now()-2*86400000,createdBy:'admin1'},
+    {id:'demo5',name:'Laura Mendoza Cruz',position:'Asistente Administrativa',dept:'Administración',email:'laura@empresa.com',token:'demo_token_005_xxxx_yyyy',canGoBack:false,createdAt:Date.now()-1*86400000,createdBy:'admin1'},
+  ];
+  demoCandidates.forEach(saveCandidate);
+
+  // Seed evaluations for demo candidates 1-4
+  function demoResponses(profile){
+    const r={};
+    QUESTIONS.forEach(q=>{
+      if(q.type==='situational'){r[q.id]=profile==='high'?0:profile==='low'?3:Math.floor(Math.random()*2);}
+      else{
+        if(q.sim){r[q.id]=profile==='sim'?5:profile==='high'?2:3;}
+        else if(q.inv){r[q.id]=profile==='high'?4:profile==='low'?2:3;}
+        else{r[q.id]=profile==='high'?2:profile==='low'?4:3;}
+      }
+    });
+    // Add some variation
+    Object.keys(r).forEach(k=>{if(Math.random()<0.3)r[k]=Math.max(1,Math.min(5,r[k]+(Math.random()<0.5?1:-1)));});
+    return r;
+  }
+
+  const profiles=['high','medium','low','low'];
+  demoCandidates.slice(0,4).forEach((c,i)=>{
+    const responses=demoResponses(profiles[i]);
+    const scores=calcScores(responses);
+    const ev={id:genId(),candidateId:c.id,responses,scores,completed:true,completedAt:c.createdAt+7200000+i*3600000};
+    saveEval(ev);
+  });
+}
+
+window.onload=()=>{
+  seedDemoData();
+  init();
+};
+</script>
+</body>
+</html>

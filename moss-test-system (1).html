@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test de MOSS — Sistema de Evaluación Psicométrica</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --navy:#0f1b2d; --navy2:#162236; --navy3:#1e3050;
+  --gold:#c9a84c; --gold2:#e8c87a;
+  --cream:#f5f0e8; --white:#ffffff;
+  --txt:#1a1a2e; --muted:#6b7280;
+  --green:#2d7a4f; --red:#b84040;
+  --border:#ddd5c8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--txt);min-height:100vh;}
+
+/* All screens hidden by default */
+.screen{display:none!important;}
+/* When active, show as block unless it also has flex-screen class */
+.screen.active{display:block!important;}
+.screen.flex-screen.active{display:flex!important;}
+
+/* LANDING */
+#screen-landing{
+  min-height:100vh; background:var(--navy);
+  flex-direction:column;
+  align-items:center; justify-content:center;
+  position:relative; overflow:hidden;
+}
+.land-bg{position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 50%,rgba(201,168,76,.08),transparent 60%),
+             radial-gradient(ellipse at 70% 20%,rgba(30,48,80,.6),transparent 50%);}
+.land-grid{position:absolute;inset:0;opacity:.04;
+  background-image:repeating-linear-gradient(0deg,var(--gold) 0,var(--gold) 1px,transparent 1px,transparent 60px),
+                   repeating-linear-gradient(90deg,var(--gold) 0,var(--gold) 1px,transparent 1px,transparent 60px);}
+.land-card{position:relative;z-index:2;text-align:center;padding:3rem 3.5rem;max-width:580px;width:90%;}
+.land-badge{display:inline-block;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.4);
+  color:var(--gold2);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;
+  padding:.4rem 1rem;border-radius:2rem;margin-bottom:1.5rem;}
+.land-title{font-family:'Playfair Display',serif;font-size:3rem;color:#fff;line-height:1.15;margin-bottom:.4rem;}
+.land-title span{color:var(--gold);}
+.land-sub{color:rgba(255,255,255,.45);font-size:.95rem;margin-bottom:2.5rem;font-weight:300;}
+.land-div{width:60px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 auto 2.5rem;}
+.land-btns{display:flex;flex-direction:column;gap:1rem;align-items:center;}
+
+/* BUTTONS */
+.btn{display:inline-block;border:none;border-radius:.5rem;font-family:'DM Sans',sans-serif;
+  font-size:.95rem;font-weight:600;cursor:pointer;transition:all .2s;padding:.9rem 2rem;width:100%;max-width:320px;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-gold:hover{background:var(--gold2);transform:translateY(-1px);}
+.btn-outline{background:transparent;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.2);}
+.btn-outline:hover{border-color:rgba(255,255,255,.5);color:#fff;}
+.btn-dark{background:var(--navy);color:#fff;}
+.btn-dark:hover{background:var(--navy3);}
+.btn-green{background:var(--green);color:#fff;}
+.btn-green:disabled{opacity:.4;cursor:not-allowed;}
+.btn-sm{padding:.5rem 1.1rem;font-size:.8rem;max-width:none;width:auto;}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);
+  padding:.5rem 1rem;border-radius:.4rem;font-size:.82rem;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all .2s;}
+.btn-ghost:hover{border-color:var(--navy);color:var(--navy);}
+
+/* CENTERED FLEX SCREENS */
+#screen-admin-login,#screen-candidate-form,#screen-instructions{
+  min-height:100vh;
+  align-items:center; justify-content:center;
+}
+#screen-admin-login{background:var(--navy);}
+#screen-candidate-form{background:var(--navy);}
+#screen-instructions{background:var(--cream);padding:2rem 1rem;}
+
+.box{background:var(--navy2);border:1px solid rgba(201,168,76,.2);border-radius:1rem;
+  padding:2.5rem;width:90%;max-width:440px;}
+.box h2{font-family:'Playfair Display',serif;color:#fff;margin-bottom:.3rem;font-size:1.6rem;}
+.box p{color:rgba(255,255,255,.4);font-size:.85rem;margin-bottom:2rem;}
+.fg{margin-bottom:1.1rem;}
+.fg label{display:block;color:rgba(255,255,255,.65);font-size:.75rem;letter-spacing:.07em;margin-bottom:.45rem;}
+.fg input{width:100%;padding:.75rem 1rem;background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);border-radius:.5rem;color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:.9rem;}
+.fg input:focus{outline:none;border-color:var(--gold);}
+.fg input::placeholder{color:rgba(255,255,255,.2);}
+.err{color:#f87171;font-size:.8rem;margin-top:.5rem;display:none;}
+.back-lnk{display:block;text-align:center;margin-top:1.2rem;
+  color:rgba(255,255,255,.4);font-size:.82rem;cursor:pointer;}
+.back-lnk:hover{color:rgba(255,255,255,.65);}
+
+/* INSTRUCTIONS */
+.inst-wrap{background:#fff;border-radius:1rem;padding:2.8rem;max-width:660px;width:100%;
+  box-shadow:0 4px 24px rgba(15,27,45,.1);}
+.inst-head{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;
+  padding-bottom:1.5rem;border-bottom:2px solid var(--cream);}
+.inst-ico{width:50px;height:50px;background:var(--navy);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:1.3rem;flex-shrink:0;}
+.inst-head h2{font-family:'Playfair Display',serif;font-size:1.45rem;color:var(--navy);}
+.inst-head p{color:var(--muted);font-size:.82rem;}
+.inst-list{list-style:none;margin-bottom:1.4rem;}
+.inst-list li{display:flex;gap:.9rem;align-items:flex-start;padding:.75rem 0;
+  border-bottom:1px solid var(--cream);font-size:.9rem;color:var(--txt);line-height:1.55;}
+.inst-n{width:24px;height:24px;min-width:24px;background:var(--navy);color:var(--gold);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;}
+.inst-note{background:rgba(201,168,76,.08);border-left:3px solid var(--gold);
+  border-radius:0 .4rem .4rem 0;padding:.85rem 1rem;font-size:.83rem;color:#7a6a3a;margin-bottom:1.8rem;}
+
+/* TEST */
+#screen-test{min-height:100vh;background:var(--cream);}
+.t-header{background:var(--navy);padding:1rem 2rem;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:100;}
+.t-title{font-family:'Playfair Display',serif;color:#fff;font-size:1.1rem;}
+.t-pinfo{color:rgba(255,255,255,.55);font-size:.8rem;}
+.prog-bg{background:rgba(255,255,255,.1);height:4px;}
+.prog-fill{height:4px;background:var(--gold);transition:width .35s ease;}
+.t-body{max-width:760px;margin:0 auto;padding:2rem 1.5rem 5rem;}
+.q-card{background:#fff;border-radius:.9rem;padding:1.8rem 2rem;margin-bottom:1.1rem;
+  box-shadow:0 2px 10px rgba(15,27,45,.06);border:2px solid transparent;transition:border-color .2s;}
+.q-card.done{border-color:rgba(45,122,79,.25);}
+.q-num{font-size:.7rem;font-weight:700;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;margin-bottom:.6rem;}
+.q-txt{font-size:.95rem;line-height:1.65;margin-bottom:1.2rem;}
+.opts{display:flex;flex-direction:column;gap:.55rem;}
+.opt{display:flex;align-items:flex-start;gap:.75rem;padding:.7rem .9rem;
+  border:1.5px solid var(--border);border-radius:.45rem;cursor:pointer;
+  transition:all .15s;font-size:.87rem;line-height:1.5;}
+.opt:hover{border-color:var(--navy);background:rgba(15,27,45,.03);}
+.opt.sel{border-color:var(--navy);background:rgba(15,27,45,.05);}
+.opt-l{width:24px;height:24px;min-width:24px;border:2px solid var(--muted);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;
+  color:var(--muted);transition:all .15s;flex-shrink:0;}
+.opt.sel .opt-l{background:var(--navy);border-color:var(--navy);color:#fff;}
+.t-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);
+  padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;z-index:100;}
+.t-nav-info{font-size:.82rem;color:var(--muted);}
+.t-nav-info strong{color:var(--txt);}
+
+/* ADMIN */
+#screen-admin{min-height:100vh;background:var(--cream);}
+.adm-hdr{background:var(--navy);padding:1.2rem 2rem;display:flex;align-items:center;justify-content:space-between;}
+.adm-hdr h1{font-family:'Playfair Display',serif;color:#fff;font-size:1.25rem;}
+.adm-hdr p{color:rgba(255,255,255,.4);font-size:.75rem;}
+.adm-body{max-width:1080px;margin:0 auto;padding:2rem 1.5rem;}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem;margin-bottom:2rem;}
+.stat{background:#fff;border-radius:.7rem;padding:1.2rem 1.4rem;box-shadow:0 2px 8px rgba(15,27,45,.06);}
+.stat-lbl{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem;}
+.stat-val{font-family:'Playfair Display',serif;font-size:1.9rem;color:var(--navy);}
+.tbl-wrap{background:#fff;border-radius:.7rem;overflow:hidden;box-shadow:0 2px 8px rgba(15,27,45,.06);}
+.tbl-hdr{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);}
+.tbl-hdr h3{font-family:'Playfair Display',serif;font-size:1.05rem;}
+table{width:100%;border-collapse:collapse;}
+thead th{background:var(--cream);padding:.75rem 1.1rem;text-align:left;font-size:.7rem;
+  font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s;}
+tbody tr:hover{background:rgba(15,27,45,.02);}
+tbody td{padding:.8rem 1.1rem;font-size:.86rem;}
+.empty{text-align:center;padding:3rem;color:var(--muted);}
+.badge{display:inline-block;padding:.18rem .55rem;border-radius:2rem;font-size:.7rem;font-weight:700;letter-spacing:.03em;}
+.b-ms{background:#dcfce7;color:#166534;} .b-s{background:#dbeafe;color:#1e40af;}
+.b-msp{background:#e0e7ff;color:#3730a3;} .b-mm{background:#fef9c3;color:#854d0e;}
+.b-mi{background:#ffedd5;color:#9a3412;} .b-i{background:#fee2e2;color:#991b1b;}
+.b-d{background:#f1f5f9;color:#475569;}
+
+/* RESULTS */
+#screen-results{min-height:100vh;background:var(--cream);}
+.res-hdr{background:var(--navy);padding:1.5rem 2rem;}
+.res-hdr-in{max-width:880px;margin:0 auto;display:flex;align-items:flex-start;
+  justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.res-hdr h2{font-family:'Playfair Display',serif;color:#fff;font-size:1.35rem;}
+.res-meta{display:flex;gap:1.4rem;margin-top:.6rem;flex-wrap:wrap;}
+.res-meta span{color:rgba(255,255,255,.55);font-size:.78rem;}
+.res-meta strong{color:var(--gold);}
+.res-acts{display:flex;gap:.7rem;align-items:center;flex-shrink:0;}
+.res-body{max-width:880px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+.total-card{background:var(--navy);border-radius:.8rem;padding:1.4rem 1.8rem;
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:1.8rem;
+  box-shadow:0 4px 16px rgba(15,27,45,.2);}
+.total-l h3{font-family:'Playfair Display',serif;color:#fff;font-size:1.05rem;}
+.total-l p{color:rgba(255,255,255,.45);font-size:.78rem;margin-top:.2rem;}
+.total-pct{font-family:'Playfair Display',serif;font-size:2.8rem;color:var(--gold);line-height:1;}
+.total-rng{color:rgba(255,255,255,.55);font-size:.78rem;margin-top:.3rem;text-align:right;}
+.dim-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-bottom:1.8rem;}
+.dim-card{background:#fff;border-radius:.8rem;padding:1.2rem 1.4rem;
+  box-shadow:0 2px 8px rgba(15,27,45,.06);border-top:4px solid var(--navy);}
+.dim-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.9rem;}
+.dim-name{font-weight:600;font-size:.83rem;color:var(--navy);line-height:1.3;}
+.dim-abbr{font-size:.7rem;color:var(--muted);margin-top:.15rem;}
+.dim-pct{font-family:'Playfair Display',serif;font-size:1.7rem;color:var(--navy);text-align:right;line-height:1;}
+.dim-pct span{font-size:.8rem;color:var(--muted);font-family:'DM Sans',sans-serif;}
+.bar-bg{height:7px;background:var(--cream);border-radius:4px;margin-bottom:3px;}
+.bar-fill{height:7px;border-radius:4px;transition:width 1s ease;}
+.dim-cmp{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-top:.35rem;flex-wrap:wrap;gap:.3rem;}
+.ideal-txt{color:var(--gold);font-weight:600;}
+.chart-sec{background:#fff;border-radius:.8rem;padding:1.4rem;
+  box-shadow:0 2px 8px rgba(15,27,45,.06);margin-bottom:1.8rem;}
+.chart-sec h3{font-family:'Playfair Display',serif;margin-bottom:1.1rem;font-size:1.05rem;}
+.chart-wrap{position:relative;height:300px;}
+.interp-list{display:flex;flex-direction:column;gap:.9rem;margin-bottom:1.8rem;}
+.interp-card{background:#fff;border-radius:.8rem;padding:1.3rem 1.5rem;
+  box-shadow:0 2px 8px rgba(15,27,45,.06);}
+.interp-top{display:flex;align-items:center;gap:.75rem;margin-bottom:.7rem;}
+.interp-ico{width:34px;height:34px;background:var(--navy);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:.85rem;flex-shrink:0;}
+.interp-ttl{font-weight:600;font-size:.88rem;color:var(--navy);}
+.interp-rng{font-size:.75rem;color:var(--muted);margin-top:.1rem;}
+.interp-txt{font-size:.86rem;line-height:1.65;}
+.interp-meta{font-size:.76rem;color:var(--muted);margin-top:.55rem;}
+.tbl-sec{background:#fff;border-radius:.8rem;padding:1.4rem;
+  box-shadow:0 2px 8px rgba(15,27,45,.06);margin-bottom:1.8rem;}
+.tbl-sec h3{font-family:'Playfair Display',serif;margin-bottom:1rem;font-size:1.05rem;}
+
+@media print{
+  .no-print{display:none!important;}
+  .screen{display:none!important;}
+  #screen-results{display:block!important;}
+  body{background:#fff!important;}
+  .res-hdr{background:#0f1b2d!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .total-card{background:#0f1b2d!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .dim-card,.interp-card,.chart-sec,.tbl-sec{page-break-inside:avoid;}
+  .res-acts{display:none!important;}
+}
+</style>
+</head>
+<body>
+
+<!-- LANDING -->
+<div id="screen-landing" class="screen flex-screen">
+  <div class="land-bg"></div>
+  <div class="land-grid"></div>
+  <div class="land-card">
+    <div class="land-badge">Sistema Psicométrico</div>
+    <h1 class="land-title">Test de <span>MOSS</span></h1>
+    <p class="land-sub">Evaluación de Habilidades Supervisoras y Relaciones Interpersonales</p>
+    <div class="land-div"></div>
+    <div class="land-btns">
+      <button class="btn btn-gold" onclick="goTo('candidate-form')">📋 Iniciar Evaluación</button>
+      <button class="btn btn-outline" onclick="goTo('admin-login')">🔒 Acceso Administrador</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN -->
+<div id="screen-admin-login" class="screen flex-screen">
+  <div class="box">
+    <h2>Administrador</h2>
+    <p>Ingresa tus credenciales para acceder al panel</p>
+    <div class="fg"><label>USUARIO</label>
+      <input type="text" id="adm-user" placeholder="admin"></div>
+    <div class="fg"><label>CONTRASEÑA</label>
+      <input type="password" id="adm-pass" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="err" id="login-err">Usuario o contraseña incorrectos</div>
+    <button class="btn btn-gold" style="max-width:100%;margin-top:.6rem" onclick="doLogin()">Ingresar</button>
+    <span class="back-lnk" onclick="goTo('landing')">← Volver al inicio</span>
+  </div>
+</div>
+
+<!-- CANDIDATE FORM -->
+<div id="screen-candidate-form" class="screen flex-screen">
+  <div class="box">
+    <h2>Datos del Candidato</h2>
+    <p>Completa tu información antes de iniciar la prueba</p>
+    <div class="fg"><label>NOMBRE COMPLETO *</label>
+      <input type="text" id="c-name" placeholder="Tu nombre completo"></div>
+    <div class="fg"><label>PUESTO AL QUE APLICA *</label>
+      <input type="text" id="c-puesto" placeholder="Ej: Supervisor de Operaciones"></div>
+    <div class="fg"><label>EDAD</label>
+      <input type="number" id="c-edad" placeholder="Ej: 30" min="18" max="70"></div>
+    <div class="err" id="form-err">Por favor completa tu nombre y el puesto.</div>
+    <button class="btn btn-gold" style="max-width:100%;margin-top:.6rem" onclick="goInstructions()">Continuar →</button>
+    <span class="back-lnk" onclick="goTo('landing')">← Volver</span>
+  </div>
+</div>
+
+<!-- INSTRUCTIONS -->
+<div id="screen-instructions" class="screen flex-screen">
+  <div class="inst-wrap">
+    <div class="inst-head">
+      <div class="inst-ico">📖</div>
+      <div><h2>Instrucciones del Test</h2><p>Lea atentamente antes de comenzar</p></div>
+    </div>
+    <ul class="inst-list">
+      <li><div class="inst-n">1</div><div>El test consta de <strong>30 situaciones</strong> con cuatro opciones de respuesta (a, b, c, d).</div></li>
+      <li><div class="inst-n">2</div><div>Selecciona <strong>únicamente una respuesta</strong> por pregunta: la que consideres más acertada.</div></li>
+      <li><div class="inst-n">3</div><div>Responde con <strong>sinceridad y espontaneidad</strong>. No existen respuestas absolutamente correctas o incorrectas.</div></li>
+      <li><div class="inst-n">4</div><div>Puedes cambiar tu respuesta en cualquier momento antes de enviar la prueba.</div></li>
+      <li><div class="inst-n">5</div><div>El botón <strong>"Enviar Prueba"</strong> se activará cuando hayas respondido las 30 preguntas.</div></li>
+    </ul>
+    <div class="inst-note">⏱ Duración estimada: <strong>15 a 25 minutos</strong>. No hay límite de tiempo.</div>
+    <button class="btn btn-dark" style="max-width:100%;padding:1rem" onclick="startTest()">Comenzar Prueba →</button>
+  </div>
+</div>
+
+<!-- TEST -->
+<div id="screen-test" class="screen">
+  <div class="t-header no-print">
+    <div class="t-title">Test de MOSS</div>
+    <div class="t-pinfo" id="t-pinfo">0 / 30 respondidas</div>
+  </div>
+  <div class="prog-bg no-print">
+    <div class="prog-fill" id="prog-fill" style="width:0%"></div>
+  </div>
+  <div class="t-body" id="t-body"></div>
+  <div class="t-nav no-print">
+    <div class="t-nav-info">Respondidas: <strong id="nav-count">0</strong> de 30</div>
+    <button class="btn btn-green btn-sm" id="btn-send" disabled onclick="submitTest()">✓ Enviar Prueba</button>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div id="screen-admin" class="screen">
+  <div class="adm-hdr no-print">
+    <div>
+      <h1>Panel de Administración — Test MOSS</h1>
+      <p>Resultados de candidatos evaluados</p>
+    </div>
+    <button class="btn btn-outline btn-sm" style="max-width:none" onclick="goTo('landing')">Cerrar sesión</button>
+  </div>
+  <div class="adm-body">
+    <div class="stats-row" id="adm-stats"></div>
+    <div class="tbl-wrap">
+      <div class="tbl-hdr"><h3>Evaluaciones Registradas</h3></div>
+      <div id="adm-table"></div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="screen-results" class="screen">
+  <div class="res-hdr">
+    <div class="res-hdr-in">
+      <div>
+        <h2 id="r-name">—</h2>
+        <div class="res-meta">
+          <span>Puesto: <strong id="r-puesto">—</strong></span>
+          <span>Fecha: <strong id="r-fecha">—</strong></span>
+          <span>Edad: <strong id="r-edad">—</strong></span>
+        </div>
+      </div>
+      <div class="res-acts no-print">
+        <button class="btn-ghost" onclick="backFromResults()">← Volver</button>
+        <button class="btn btn-gold btn-sm" onclick="window.print()">🖨 Imprimir / PDF</button>
+      </div>
+    </div>
+  </div>
+  <div class="res-body" id="res-body"></div>
+</div>
+
+<script>
+// ===================== DATA =====================
+var Q=[
+  {t:"Se le ha asignado un puesto en una gran empresa. La mejor forma de establecer relaciones amistosas y cordiales con sus nuevos compañeros será:",o:["Evitando tomar nota de los errores en que incurran.","Hablando bien de ellos al jefe.","Mostrando interés en el trabajo de ellos.","Pidiéndoles les permitan hacer los trabajos que usted puede hacer mejor."]},
+  {t:"Tiene usted un empleado muy eficiente pero que constantemente se queja del trabajo; sus quejas producen mal efecto en los demás. Lo mejor sería:",o:["Pedir a los demás empleados que no hagan caso.","Averiguar la causa de esa actitud y procurar su modificación.","Cambiarlo de departamento donde quede a cargo de otro jefe.","Permitirle planear lo más posible acerca de su trabajo."]},
+  {t:"Un empleado de 60 años de edad que ha sido leal a la empresa durante 25 años se queja del exceso de trabajo. Lo mejor sería:",o:["Decirle que vuelva a su trabajo porque si no será desvinculado.","Despedirlo, substituyéndolo por alguien más joven.","Darle un aumento de sueldo que evite que continúe quejándose.","Aminorar su trabajo."]},
+  {t:"Uno de los socios, sin autoridad sobre usted, le ordena haga algo en forma bien distinta de lo que planeaba. ¿Qué haría usted?",o:["Acatar la orden y no armar mayor revuelo.","Ignorar las indicaciones y hacerlo según había planeado.","Decirle que esto no es asunto suyo y que usted hará las cosas a su modo.","Decirle que lo haga él mismo."]},
+  {t:"Usted visita a un amigo íntimo que ha estado enfermo por algún tiempo. Lo mejor sería:",o:["Platicarle sus diversiones recientes.","Platicarle nuevas cosas referentes a sus amigos mutuos.","Comentar su enfermedad.","Enfatizar lo mucho que le apena verle enfermo."]},
+  {t:"Trabaja usted en una industria y su jefe quiere que tome un curso relacionado con su carrera pero compatible con el horario de trabajo. Lo mejor sería:",o:["Continuar normalmente su carrera e informar al jefe si pregunta.","Explicar la situación y obtener su opinión en cuanto a la importancia relativa de ambas situaciones.","Dejar la escuela en relación a los intereses del trabajo.","Asistir en forma alterna y no hacer comentarios."]},
+  {t:"Un agente viajero con 15 años de antigüedad decide, presionado por su familia, sentar raíces. Se le cambia a las oficinas generales. Es de esperar que:",o:["Guste de los descansos del trabajo de oficina.","Se sienta inquieto por la rutina de la oficina.","Busque otro trabajo.","Resulte muy ineficiente en el trabajo de oficina."]},
+  {t:"Tiene dos invitados a cenar: uno radical y otro conservador. Surge una acalorada discusión política. Lo mejor sería:",o:["Tomar partido.","Intentar cambiar de tema.","Intervenir dando sus puntos de vista y mostrar donde ambos pecan de extremosos.","Pedir que cambien de tema para evitar mayor discusión."]},
+  {t:"Un joven invita a una dama al teatro; al llegar se percata de que ha olvidado la cartera. Sería mejor:",o:["Tratar de obtener boletos dejando el reloj en prenda.","Buscar a algún amigo a quien pedir prestado.","Decidir de acuerdo con ella lo procedente.","Dar una excusa plausible para ir a casa por dinero."]},
+  {t:"Usted ha tenido experiencia como vendedor y acaba de conseguir empleo en una tienda. La mejor forma de relacionarse con los empleados del departamento sería:",o:["Permitirles hacer la mayoría de las ventas por unos días mientras observa sus métodos.","Tratar de instituir los métodos que anteriormente le fueron útiles.","Adaptarse a las condiciones y aceptar consejos de sus compañeros.","Pedir al jefe todo el consejo necesario."]},
+  {t:"Es usted un joven empleado que va a comer con una maestra a quien conoce superficialmente. Lo mejor sería iniciar la conversación acerca de:",o:["Algún tópico de actualidad.","Algún aspecto interesante de su propio trabajo.","Las tendencias actuales en el terreno docente.","Las sociedades de padres de familia."]},
+  {t:"Una señora que por largo tiempo ha dirigido trabajos benéficos se cambia a otra población. Es de esperarse que ella:",o:["Se sienta insatisfecha de su nuevo hogar.","Se interese más por los trabajos domésticos.","Intervenga poco a poco en la vida de la comunidad, continuando sus intereses.","Adopte nuevos intereses en la nueva comunidad."]},
+  {t:"Quiere pedirle un favor a un conocido con quien tiene poca confianza. La mejor forma de lograrlo sería:",o:["Haciéndole creer que será él quien se beneficie más.","Enfatizando la importancia que para usted tiene que se le conceda.","Ofrecer algo de retribución.","Decir lo que desea en forma breve indicando los motivos."]},
+  {t:"Un joven de 24 años gasta bastante tiempo y dinero en diversiones. Probablemente cambie sus costumbres si:",o:["Sus hábitos nocturnos lesionan su salud.","Sus amigos enfatizan el daño que se hace a sí mismo.","Su jefe se da cuenta y lo previene.","Se interesa en el desarrollo de alguna fase de su trabajo."]},
+  {t:"Tras de haber hecho muchos favores a un amigo, este empieza a dar por hecho que usted resolverá todas sus dificultades. La mejor forma de readaptar la situación sin ofenderle sería:",o:["Explicar el daño que se está causando.","Pedir a un amigo mutuo que trate de arreglar las cosas.","Ayudarle una vez más pero de tal manera que sienta que mejor hubiera sido no haberlo solicitado.","Darle una excusa para no seguir ayudándole."]},
+  {t:"Una persona recién ascendida a un mejor puesto de autoridad lograría mejor sus metas y la buena voluntad de los empleados:",o:["Tratando de que cada empleado entienda qué es la verdadera eficiencia.","Ascendiendo cuanto antes a quienes considere lo merezcan.","Preguntando confidencialmente a cada empleado en cuanto a los cambios que estiman necesarios.","Siguiendo los sistemas del anterior jefe y gradualmente hacer los cambios necesarios."]},
+  {t:"Vive a 15 km. del centro y ha ofrecido llevar de regreso a un amigo a las 16:00. Él espera desde las 15:00 y usted se entera que no podrá salir antes de las 17:30. Sería mejor:",o:["Pedirle un taxi.","Explicarle y dejar que él decida.","Pedirle que espere hasta las 17:30 horas.","Proponerle que se lleve su auto."]},
+  {t:"Es usted un ejecutivo y dos de sus empleados se llevan mal; ambos son eficientes. Lo mejor sería:",o:["Despedir al menos eficiente.","Dar trabajo en común que a ambos interese.","Hacerles ver el daño que se hacen.","Darles trabajos distintos."]},
+  {t:"El señor González lleva 10 años en un puesto subordinado, trabaja callado y confidencialmente. De obtener trabajo en otra empresa, muy probablemente:",o:["Asuma fácilmente responsabilidad como supervisor.","Haga ver de inmediato su valor.","Sea lento para abrirse las necesarias oportunidades.","Renuncie ante la más ligera crítica de su trabajo."]},
+  {t:"Va usted a ser maestro de ceremonias en una cena el próximo sábado; ese día, por enfermedad familiar, se ve imposibilitado para asistir. Lo mejor sería:",o:["Cancelar la cena.","Encontrar quien lo sustituya.","Detallar los planes que tenía y evitarlos.","Enviar una nota explicando la causa de su ausencia."]},
+  {t:"En igualdad de circunstancias, el empleado que mejor se adapta a un nuevo puesto es aquel que:",o:["Ha sido bueno en puestos anteriores.","Ha tenido éxito durante 10 años en su puesto.","Tiene sus propias ideas e invariablemente se rige por ellas.","Cuenta con una buena recomendación de su jefe anterior."]},
+  {t:"Un conocido le platica acerca de una afición que él tiene; su conversación le aburre. Lo mejor sería:",o:["Escuchar de manera cortés, pero aburrida.","Escuchar con fingido interés.","Decirle francamente que el tema no le interesa.","Mirar el reloj con impaciencia."]},
+  {t:"Es usted un empleado ordinario en una oficina grande. El jefe entra cuando usted lee en vez de trabajar. Lo mejor sería:",o:["Doblar el periódico y volver al trabajo.","Pretender que obtiene recortes necesarios al trabajo.","Tratar de interesar al jefe leyéndole un encabezado importante.","Seguir leyendo sin mostrar embarazo."]},
+  {t:"Es usted un maestro de primaria. Camino a la escuela, algunos alumnos lanzan bolas de nieve. Desde el punto de vista de la buena administración escolar, usted debería:",o:["Castigarles ahí mismo por su indisciplina.","Decirles que de volverlo a hacer los castigará.","Pasar la queja a sus padres.","Tomarlo como broma y no hacer caso al respecto."]},
+  {t:"Preside el Comité de Mejoras Materiales en su colonia; las últimas reuniones han sido de escasa asistencia. Se mejoraría la asistencia:",o:["Visitando vecinos prominentes explicándoles los problemas.","Avisando de un programa interesante para la reunión.","Poniendo avisos en los lugares públicos.","Enviando avisos personales."]},
+  {t:"Salinas, eficiente pero de los que 'todo lo saben', critica a Montoya; el jefe opina que la idea de Montoya ahorra tiempo. Probablemente Salinas:",o:["Pida otro trabajo al jefe.","Lo haga a su modo sin comentarios.","Lo haga con Montoya, pero siga criticándolo.","Lo haga con Montoya, pero mal a propósito."]},
+  {t:"Un hombre de 64 años tuvo algún éxito cuando joven como político; sus modos directos le han impedido descollar los últimos 20 años. Lo más probable es que:",o:["Persista en su manera de ser.","Cambie para lograr éxito.","Forme un nuevo partido político.","Abandone la política por inmoral."]},
+  {t:"Es usted un joven que encuentra en la calle a una mujer de más edad, a quien apenas conoce, y que parece haber estado llorando. Lo mejor sería:",o:["Preguntarle por qué está triste.","Pasarle el brazo por el hombro y consolarla.","Simular no advertir su pena.","Simular no haberla visto."]},
+  {t:"Un compañero flojea de tal manera que a usted le toca más trabajo del que le corresponde. La mejor forma de conservar las relaciones sería:",o:["Explicar el caso al jefe cortésmente.","Cortésmente indicarle que debe hacer lo que le corresponde o que usted se quejará con el jefe.","Hacer tanto como pueda eficientemente y no decir nada del caso al jefe.","Hacer lo suyo y dejar pendiente lo que el compañero no haga."]},
+  {t:"Se le ha asignado un puesto ejecutivo en una organización. Para ganar el respeto y la admiración de sus subordinados, sin perjuicio de sus planes, habría que:",o:["Ceder en todos los pequeños puntos posibles.","Tratar de convencerlos de todas sus ideas.","Ceder parcialmente en todas las cuestiones importantes.","Abogar por muchas reformas."]}
+];
+
+// Answer key (0=a, 1=b, 2=c, 3=d)
+var KEYS=[2,1,3,1,1,1,1,1,2,2,0,2,3,3,3,3,1,3,2,1,0,0,0,3,1,2,0,2,0,3];
+
+var DIMS=[
+  {k:'HS',   name:'Habilidad en Supervisión',                             abbr:'H.S.',      icon:'👥', color:'#0f1b2d', qi:[1,2,15,17,23,29]},
+  {k:'CDRH', name:'Capacidad de Decisión en Relaciones Humanas',          abbr:'C.D.R.H.',  icon:'🧠', color:'#2d5f8a', qi:[3,5,19,22,28]},
+  {k:'CEPI', name:'Capacidad de Evaluación de Problemas Interpersonales', abbr:'C.E.P.I.',  icon:'🔍', color:'#5a3e8a', qi:[6,8,11,13,18,19,25,26]},
+  {k:'HERI', name:'Habilidad para Establecer Relaciones Interpersonales', abbr:'H.E.R.I.',  icon:'🤝', color:'#2d7a4f', qi:[0,9,10,12,24]},
+  {k:'SCTRI',name:'Sentido Común y Tacto en Relaciones Interpersonales',  abbr:'S.C.T.R.I.',icon:'💡', color:'#8a5a2d', qi:[4,7,14,16,21,27]}
+];
+
+var PCT={
+  HS:   {0:0,1:17,2:34,3:50,4:67,5:84,6:100},
+  CDRH: {0:0,1:20,2:40,3:60,4:80,5:100},
+  CEPI: {0:0,1:13,2:25,3:38,4:50,5:63,6:75,7:88,8:100},
+  HERI: {0:0,1:20,2:40,3:60,4:80,5:100},
+  SCTRI:{0:0,1:17,2:34,3:50,4:67,5:84,6:100}
+};
+
+var RNG=[
+  {min:98,max:100,lbl:'Muy Superior',cls:'b-ms'},
+  {min:83,max:97, lbl:'Superior',    cls:'b-s'},
+  {min:64,max:82, lbl:'Medio Superior',cls:'b-msp'},
+  {min:42,max:63, lbl:'Medio Medio', cls:'b-mm'},
+  {min:27,max:41, lbl:'Medio Inferior',cls:'b-mi'},
+  {min:7, max:26, lbl:'Inferior',    cls:'b-i'},
+  {min:0, max:6,  lbl:'Deficiente',  cls:'b-d'}
+];
+
+var INT={
+  HS:{high:'Demuestra excelente capacidad para guiar, motivar y dirigir equipos. Comprende la dinámica grupal e influye positivamente en el rendimiento de sus colaboradores.',mid:'Posee habilidades supervisoras adecuadas para situaciones estándar. Puede mejorar en la gestión de conflictos y motivación sostenida de equipos.',low:'Presenta áreas de oportunidad importantes en la dirección de personas. Se recomienda capacitación específica en liderazgo y técnicas de supervisión.'},
+  CDRH:{high:'Toma decisiones acertadas y oportunas en situaciones de relaciones humanas complejas. Analiza los problemas con objetividad y actúa con asertividad.',mid:'La toma de decisiones en relaciones humanas es funcional, aunque puede mejorar en contextos de alta presión o ambigüedad.',low:'Manifiesta dificultades para tomar decisiones efectivas en situaciones interpersonales. Requiere desarrollo en análisis situacional y gestión emocional.'},
+  CEPI:{high:'Identifica con precisión la naturaleza de los problemas interpersonales y propone soluciones pertinentes. Posee inteligencia social desarrollada.',mid:'Evalúa adecuadamente la mayoría de los problemas interpersonales, aunque en situaciones complejas puede necesitar más información antes de actuar.',low:'Muestra limitaciones para evaluar problemas entre personas. Necesita desarrollar empatía, escucha activa y razonamiento situacional.'},
+  HERI:{high:'Establece vínculos interpersonales sólidos y duraderos con facilidad. Es percibido como empático, confiable y accesible por quienes lo rodean.',mid:'Puede establecer relaciones adecuadas en la mayoría de contextos, aunque en entornos nuevos puede requerir mayor tiempo de adaptación.',low:'Presenta dificultades para construir relaciones interpersonales efectivas. Se recomienda trabajo en habilidades sociales y comunicación asertiva.'},
+  SCTRI:{high:'Aplica el sentido común de manera consistente en situaciones sociales. Sabe cuándo hablar, cuándo escuchar y cómo abordar temas delicados con tacto.',mid:'Manejo aceptable del tacto en situaciones interpersonales. Puede beneficiarse de mayor reflexión ante escenarios ambiguos.',low:'Le cuesta aplicar tacto y sentido común en situaciones sociales diversas. Puede generar fricciones innecesarias por respuestas inapropiadas.'}
+};
+
+// ===================== STATE =====================
+var cand=null;
+var ans=new Array(30).fill(null);
+var results=[];
+var backTgt='landing';
+var chart=null;
+
+try{results=JSON.parse(localStorage.getItem('moss')||'[]');}catch(e){}
+
+// ===================== NAVIGATION =====================
+function goTo(id){
+  var screens=document.querySelectorAll('.screen');
+  for(var i=0;i<screens.length;i++) screens[i].classList.remove('active');
+  var el=document.getElementById('screen-'+id);
+  if(el) el.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ===================== LOGIN =====================
+function doLogin(){
+  var u=document.getElementById('adm-user').value.trim();
+  var p=document.getElementById('adm-pass').value.trim();
+  if(u==='admin'&&p==='moss2024'){
+    document.getElementById('login-err').style.display='none';
+    buildAdmin();
+    goTo('admin');
+  } else {
+    document.getElementById('login-err').style.display='block';
+  }
+}
+
+// ===================== CANDIDATE =====================
+function goInstructions(){
+  var name=document.getElementById('c-name').value.trim();
+  var puesto=document.getElementById('c-puesto').value.trim();
+  if(!name||!puesto){
+    document.getElementById('form-err').style.display='block';
+    return;
+  }
+  document.getElementById('form-err').style.display='none';
+  cand={
+    name:name, puesto:puesto,
+    edad:document.getElementById('c-edad').value.trim()||'—',
+    fecha:new Date().toLocaleDateString('es-GT',{year:'numeric',month:'long',day:'numeric'})
+  };
+  ans=new Array(30).fill(null);
+  goTo('instructions');
+}
+
+// ===================== TEST =====================
+function startTest(){
+  buildTest();
+  goTo('test');
+}
+
+function buildTest(){
+  var html='';
+  for(var i=0;i<Q.length;i++){
+    var q=Q[i];
+    html+='<div class="q-card" id="qc'+i+'"><div class="q-num">Pregunta '+(i+1)+' de 30</div>';
+    html+='<div class="q-txt">'+q.t+'</div><div class="opts">';
+    var lets=['a','b','c','d'];
+    for(var j=0;j<4;j++){
+      html+='<div class="opt" id="op'+i+'_'+j+'" onclick="pick('+i+','+j+')"><div class="opt-l">'+lets[j]+'</div><span>'+q.o[j]+'</span></div>';
+    }
+    html+='</div></div>';
+  }
+  document.getElementById('t-body').innerHTML=html;
+  updProg();
+}
+
+function pick(qi,oi){
+  for(var j=0;j<4;j++){
+    var e=document.getElementById('op'+qi+'_'+j);
+    if(e) e.classList.remove('sel');
+  }
+  var s=document.getElementById('op'+qi+'_'+oi);
+  if(s) s.classList.add('sel');
+  ans[qi]=oi;
+  var c=document.getElementById('qc'+qi);
+  if(c) c.classList.add('done');
+  updProg();
+}
+
+function updProg(){
+  var n=0;
+  for(var i=0;i<ans.length;i++) if(ans[i]!==null) n++;
+  var pct=(n/30)*100;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('t-pinfo').textContent=n+' / 30 respondidas';
+  document.getElementById('nav-count').textContent=n;
+  document.getElementById('btn-send').disabled=(n<30);
+}
+
+// ===================== SCORING =====================
+function calcScore(a){
+  var ds={};
+  for(var d=0;d<DIMS.length;d++){
+    var dim=DIMS[d];
+    var c=0;
+    for(var q=0;q<dim.qi.length;q++) if(a[dim.qi[q]]===KEYS[dim.qi[q]]) c++;
+    var tbl=PCT[dim.k];
+    ds[dim.k]={correct:c,max:dim.qi.length,pct:(tbl[c]!==undefined?tbl[c]:0)};
+  }
+  var tot=0;
+  for(var k in ds) tot+=ds[k].pct;
+  return{ds:ds,total:Math.round(tot/5)};
+}
+
+function getR(pct){
+  for(var i=0;i<RNG.length;i++) if(pct>=RNG[i].min&&pct<=RNG[i].max) return RNG[i];
+  return RNG[RNG.length-1];
+}
+
+function lvl(pct){ return pct>=64?'high':pct>=27?'mid':'low'; }
+
+// ===================== SUBMIT =====================
+function submitTest(){
+  var ok=true;
+  for(var i=0;i<ans.length;i++) if(ans[i]===null){ok=false;break;}
+  if(!ok){alert('Por favor responde todas las preguntas antes de enviar.');return;}
+  var sc=calcScore(ans);
+  var rec={id:Date.now(),candidate:cand,answers:ans.slice(),scoring:sc,date:new Date().toISOString()};
+  results.push(rec);
+  try{localStorage.setItem('moss',JSON.stringify(results));}catch(e){}
+  backTgt='landing';
+  showResults(rec);
+}
+
+// ===================== RESULTS =====================
+function showResults(rec){
+  var c=rec.candidate, sc=rec.scoring, IDEAL=84;
+  document.getElementById('r-name').textContent=c.name;
+  document.getElementById('r-puesto').textContent=c.puesto;
+  document.getElementById('r-fecha').textContent=c.fecha;
+  document.getElementById('r-edad').textContent=c.edad;
+
+  var tRng=getR(sc.total);
+  var h='';
+
+  // Total
+  h+='<div class="total-card"><div class="total-l"><h3>Resultado Global</h3><p>Promedio de las cinco dimensiones evaluadas</p></div>';
+  h+='<div><div class="total-pct">'+sc.total+'%</div><div class="total-rng">'+tRng.lbl+'</div></div></div>';
+
+  // Dimension cards
+  h+='<div class="dim-grid">';
+  for(var d=0;d<DIMS.length;d++){
+    var dim=DIMS[d], ds=sc.ds[dim.k], rng=getR(ds.pct), gap=ds.pct-IDEAL;
+    var gT=gap>=0?'<span style="color:#2d7a4f;font-weight:600">+'+gap+'% vs ideal</span>':'<span style="color:#b84040;font-weight:600">'+gap+'% vs ideal</span>';
+    h+='<div class="dim-card" style="border-top-color:'+dim.color+'">';
+    h+='<div class="dim-top"><div><div class="dim-name">'+dim.icon+' '+dim.name+'</div><div class="dim-abbr">'+dim.abbr+'</div></div>';
+    h+='<div><div class="dim-pct">'+ds.pct+'<span>%</span></div><div style="text-align:right;margin-top:4px"><span class="badge '+rng.cls+'">'+rng.lbl+'</span></div></div></div>';
+    h+='<div class="bar-bg"><div class="bar-fill" style="width:'+ds.pct+'%;background:'+dim.color+'"></div></div>';
+    h+='<div class="bar-bg" style="opacity:.3"><div class="bar-fill" style="width:'+IDEAL+'%;background:'+dim.color+'"></div></div>';
+    h+='<div class="dim-cmp"><span>Obtenido: <b>'+ds.pct+'%</b></span><span class="ideal-txt">Ideal: ≥'+IDEAL+'%</span><span>'+gT+'</span></div></div>';
+  }
+  h+='</div>';
+
+  // Chart
+  h+='<div class="chart-sec"><h3>📊 Perfil Psicométrico — Candidato vs. Perfil Ideal</h3><div class="chart-wrap"><canvas id="mchart"></canvas></div></div>';
+
+  // Interpretations
+  h+='<div class="interp-list"><h3 style="font-family:\'Playfair Display\',serif;font-size:1.1rem;margin-bottom:.3rem">Interpretación por Dimensión</h3>';
+  for(var d=0;d<DIMS.length;d++){
+    var dim=DIMS[d], ds=sc.ds[dim.k], rng=getR(ds.pct), gap=ds.pct-IDEAL;
+    var gT=gap>=0?'<span style="color:#2d7a4f;font-weight:600">+'+gap+'% sobre el perfil ideal</span>':'<span style="color:#b84040;font-weight:600">'+gap+'% bajo el perfil ideal</span>';
+    h+='<div class="interp-card"><div class="interp-top"><div class="interp-ico">'+dim.icon+'</div>';
+    h+='<div><div class="interp-ttl">'+dim.name+' ('+dim.abbr+')</div>';
+    h+='<div class="interp-rng"><span class="badge '+rng.cls+'">'+rng.lbl+'</span> &nbsp;'+ds.pct+'% &nbsp;·&nbsp; '+gT+'</div></div></div>';
+    h+='<p class="interp-txt">'+INT[dim.k][lvl(ds.pct)]+'</p>';
+    h+='<p class="interp-meta">Respuestas correctas: <b>'+ds.correct+' de '+ds.max+'</b> &nbsp;|&nbsp; Percentil: <b>'+ds.pct+'%</b> &nbsp;|&nbsp; Perfil ideal: ≥'+IDEAL+'%</p></div>';
+  }
+  h+='</div>';
+
+  // Summary table
+  h+='<div class="tbl-sec"><h3>📋 Tabla Resumen de Resultados</h3><table>';
+  h+='<thead><tr><th>Dimensión</th><th>Correctas</th><th>Máx.</th><th>Percentil</th><th>Ideal</th><th>Rango</th></tr></thead><tbody>';
+  for(var d=0;d<DIMS.length;d++){
+    var dim=DIMS[d], ds=sc.ds[dim.k], rng=getR(ds.pct);
+    h+='<tr><td><b>'+dim.abbr+'</b> — '+dim.name+'</td><td>'+ds.correct+'</td><td>'+ds.max+'</td><td>'+ds.pct+'%</td><td>≥'+IDEAL+'%</td><td><span class="badge '+rng.cls+'">'+rng.lbl+'</span></td></tr>';
+  }
+  h+='<tr style="background:rgba(15,27,45,.05);font-weight:700"><td>TOTAL GENERAL</td><td colspan="2">—</td><td>'+sc.total+'%</td><td>≥'+IDEAL+'%</td><td><span class="badge '+tRng.cls+'">'+tRng.lbl+'</span></td></tr>';
+  h+='</tbody></table></div>';
+
+  document.getElementById('res-body').innerHTML=h;
+  goTo('results');
+  setTimeout(function(){drawChart(sc,IDEAL);},250);
+}
+
+function drawChart(sc,ideal){
+  if(chart){chart.destroy();chart=null;}
+  var ctx=document.getElementById('mchart');
+  if(!ctx) return;
+  var labels=[],obtained=[],idealArr=[];
+  for(var d=0;d<DIMS.length;d++){
+    labels.push(DIMS[d].abbr);
+    obtained.push(sc.ds[DIMS[d].k].pct);
+    idealArr.push(ideal);
+  }
+  chart=new Chart(ctx,{
+    type:'radar',
+    data:{labels:labels,datasets:[
+      {label:'Candidato',data:obtained,backgroundColor:'rgba(15,27,45,.15)',borderColor:'#0f1b2d',borderWidth:2.5,pointBackgroundColor:'#0f1b2d',pointRadius:5},
+      {label:'Perfil Ideal',data:idealArr,backgroundColor:'rgba(201,168,76,.08)',borderColor:'#c9a84c',borderWidth:2,borderDash:[6,4],pointBackgroundColor:'#c9a84c',pointRadius:4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{r:{min:0,max:100,ticks:{stepSize:20,font:{size:11},color:'#6b7280'},grid:{color:'rgba(0,0,0,.08)'},pointLabels:{font:{size:12,weight:'600'},color:'#1a1a2e'}}},
+      plugins:{legend:{position:'top',labels:{font:{size:12},padding:16}}}}
+  });
+}
+
+function backFromResults(){
+  if(backTgt==='admin'){buildAdmin();goTo('admin');}
+  else goTo('landing');
+}
+
+// ===================== ADMIN =====================
+function buildAdmin(){
+  var n=results.length;
+  var avg=n?Math.round(results.reduce(function(s,r){return s+r.scoring.total;},0)/n):0;
+  var sup=results.filter(function(r){return r.scoring.total>=83;}).length;
+  var last=n?new Date(results[n-1].date).toLocaleDateString('es-GT'):'—';
+  document.getElementById('adm-stats').innerHTML=
+    '<div class="stat"><div class="stat-lbl">Total Evaluados</div><div class="stat-val">'+n+'</div></div>'+
+    '<div class="stat"><div class="stat-lbl">Puntaje Promedio</div><div class="stat-val">'+(n?avg+'%':'—')+'</div></div>'+
+    '<div class="stat"><div class="stat-lbl">Rangos Superiores</div><div class="stat-val">'+sup+'</div></div>'+
+    '<div class="stat"><div class="stat-lbl">Última Evaluación</div><div class="stat-val" style="font-size:1rem">'+last+'</div></div>';
+  if(!n){
+    document.getElementById('adm-table').innerHTML='<div class="empty"><p style="font-size:2rem;margin-bottom:.8rem">📋</p><p>Aún no hay evaluaciones registradas.</p></div>';
+    return;
+  }
+  var h='<table><thead><tr><th>#</th><th>Candidato</th><th>Puesto</th><th>Fecha</th><th>Total</th><th>Rango</th><th></th></tr></thead><tbody>';
+  for(var i=0;i<results.length;i++){
+    var r=results[i], rng=getR(r.scoring.total);
+    h+='<tr><td>'+(i+1)+'</td><td><b>'+r.candidate.name+'</b></td><td>'+r.candidate.puesto+'</td><td>'+r.candidate.fecha+'</td>';
+    h+='<td><b>'+r.scoring.total+'%</b></td><td><span class="badge '+rng.cls+'">'+rng.lbl+'</span></td>';
+    h+='<td><button class="btn btn-dark btn-sm" onclick="viewRes('+i+')">Ver Resultados</button></td></tr>';
+  }
+  h+='</tbody></table>';
+  document.getElementById('adm-table').innerHTML=h;
+}
+
+function viewRes(i){
+  backTgt='admin';
+  showResults(results[i]);
+}
+
+// ===================== INIT =====================
+goTo('landing');
+</script>
+</body>
+</html>
