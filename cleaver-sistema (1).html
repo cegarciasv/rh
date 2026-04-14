@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Técnica CLEAVER — Sistema de Evaluación</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal: #1a6b8a;
+  --teal-dark: #124d65;
+  --teal-light: #d0eaf4;
+  --slate: #2c3e50;
+  --slate-light: #7f8c8d;
+  --bg: #f4f7f9;
+  --white: #ffffff;
+  --border: #dde3e8;
+  --shadow: 0 4px 20px rgba(26,107,138,0.12);
+  --D: #c0392b; --D-bg: #fdf2f0;
+  --I: #d4881a; --I-bg: #fdf6e8;
+  --S: #1e8449; --S-bg: #edfaef;
+  --C: #1a5276; --C-bg: #eaf2fc;
+  --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--slate); min-height: 100vh; }
+
+/* ── VIEWS ── */
+.view { display: none; min-height: 100vh; }
+.view.active { display: flex; flex-direction: column; }
+
+/* ── HOME ── */
+#view-home { align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal) 60%, #2980b9 100%); }
+.home-card { background: var(--white); border-radius: 20px; padding: 56px 48px; max-width: 480px; width: 90%;
+  text-align: center; box-shadow: 0 24px 60px rgba(0,0,0,0.25); }
+.home-logo { font-family: 'Crimson Pro', serif; font-size: 52px; font-weight: 600; color: var(--teal);
+  letter-spacing: 8px; margin-bottom: 4px; }
+.home-subtitle { color: var(--slate-light); font-size: 13px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 40px; }
+.home-divider { height: 2px; background: var(--teal-light); margin: 28px 0; }
+.home-label { font-size: 13px; color: var(--slate-light); margin-bottom: 20px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px 28px; border-radius: 10px; font-family: 'Nunito', sans-serif; font-weight: 700;
+  font-size: 15px; cursor: pointer; border: none; transition: all 0.2s; text-decoration: none; }
+.btn-primary { background: var(--teal); color: var(--white); width: 100%; margin-bottom: 12px; }
+.btn-primary:hover { background: var(--teal-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,107,138,0.3); }
+.btn-secondary { background: transparent; color: var(--teal); border: 2px solid var(--teal); width: 100%; }
+.btn-secondary:hover { background: var(--teal-light); }
+.btn-danger { background: #e74c3c; color: white; }
+.btn-danger:hover { background: #c0392b; }
+.btn-sm { padding: 8px 16px; font-size: 13px; }
+.btn-outline { background: transparent; color: var(--slate); border: 2px solid var(--border); }
+.btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+
+/* ── HEADER ── */
+.app-header { background: var(--teal); color: white; padding: 14px 32px; display: flex;
+  align-items: center; justify-content: space-between; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+.app-header-title { font-family: 'Crimson Pro', serif; font-size: 22px; font-weight: 600; letter-spacing: 3px; }
+.app-header-right { display: flex; gap: 12px; align-items: center; }
+.header-user { font-size: 13px; opacity: 0.8; }
+
+/* ── LOGIN MODAL ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex;
+  align-items: center; justify-content: center; z-index: 1000; }
+.modal-overlay.hidden { display: none; }
+.modal-card { background: white; border-radius: var(--radius); padding: 36px; max-width: 400px; width: 90%; }
+.modal-title { font-family: 'Crimson Pro', serif; font-size: 24px; color: var(--teal); margin-bottom: 8px; }
+.modal-subtitle { font-size: 13px; color: var(--slate-light); margin-bottom: 24px; }
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; font-size: 13px; font-weight: 700; color: var(--slate); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; padding: 12px 16px; border: 2px solid var(--border); border-radius: 8px;
+  font-family: 'Nunito', sans-serif; font-size: 15px; color: var(--slate); outline: none;
+  transition: border-color 0.2s; }
+.form-group input:focus, .form-group select:focus { border-color: var(--teal); }
+.error-msg { color: #e74c3c; font-size: 13px; margin-top: 8px; }
+.modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+/* ── CANDIDATE FLOW ── */
+#view-candidate { background: var(--bg); }
+.candidate-container { max-width: 780px; margin: 0 auto; padding: 32px 20px; }
+.section-title { font-family: 'Crimson Pro', serif; font-size: 28px; color: var(--teal); margin-bottom: 6px; }
+.section-subtitle { font-size: 14px; color: var(--slate-light); margin-bottom: 28px; }
+.card { background: white; border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); margin-bottom: 20px; }
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* ── TEST GROUPS ── */
+.test-progress { height: 6px; background: var(--border); border-radius: 3px; margin-bottom: 28px; overflow: hidden; }
+.test-progress-bar { height: 100%; background: var(--teal); border-radius: 3px; transition: width 0.4s; }
+.progress-label { font-size: 13px; color: var(--slate-light); margin-bottom: 8px; }
+.group-card { background: white; border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 16px; border-left: 4px solid var(--teal); }
+.group-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.group-number { font-size: 12px; font-weight: 800; color: var(--teal); text-transform: uppercase; letter-spacing: 1px; }
+.group-labels { display: grid; grid-template-columns: 1fr 80px 80px; gap: 8px; margin-bottom: 8px; }
+.group-label-hdr { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--slate-light); text-align: center; }
+.word-row { display: grid; grid-template-columns: 1fr 80px 80px; gap: 8px; align-items: center; margin-bottom: 8px; }
+.word-text { font-size: 15px; font-weight: 600; color: var(--slate); }
+.word-check { display: flex; align-items: center; justify-content: center; }
+.word-check input[type=radio] { display: none; }
+.word-check label { width: 36px; height: 36px; border: 2px solid var(--border); border-radius: 8px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 14px; font-weight: 700; }
+.word-check.mas label { color: var(--teal); }
+.word-check.menos label { color: #e74c3c; }
+.word-check input:checked + label { background: var(--teal); color: white; border-color: var(--teal); }
+.word-check.menos input:checked + label { background: #e74c3c; border-color: #e74c3c; }
+.group-valid { border-left-color: #27ae60; }
+.group-warning { border-left-color: #f39c12; }
+.nav-buttons { display: flex; gap: 12px; justify-content: space-between; margin-top: 28px; }
+
+/* ── DONE VIEW ── */
+#view-done { align-items: center; justify-content: center; background: linear-gradient(135deg, var(--teal-dark), var(--teal)); }
+.done-card { background: white; border-radius: 20px; padding: 56px 48px; max-width: 480px; text-align: center; }
+.done-icon { font-size: 64px; margin-bottom: 20px; }
+.done-title { font-family: 'Crimson Pro', serif; font-size: 32px; color: var(--teal); margin-bottom: 12px; }
+.done-text { color: var(--slate-light); line-height: 1.7; margin-bottom: 28px; }
+
+/* ── DASHBOARD ── */
+#view-dashboard { background: var(--bg); }
+.dashboard-container { max-width: 1000px; margin: 0 auto; padding: 32px 20px; }
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+.stat-card { background: white; border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow); }
+.stat-value { font-size: 36px; font-weight: 800; color: var(--teal); }
+.stat-label { font-size: 13px; color: var(--slate-light); margin-top: 4px; }
+.candidates-table { width: 100%; border-collapse: collapse; }
+.candidates-table th { background: var(--teal); color: white; padding: 12px 16px; text-align: left;
+  font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.candidates-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
+.candidates-table tr:hover td { background: var(--teal-light); }
+.status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.badge-completed { background: #d5f5e3; color: #1e8449; }
+.badge-pending { background: #fef9e7; color: #d4881a; }
+
+/* ── RESULTS VIEW ── */
+#view-results { background: var(--bg); }
+.results-container { max-width: 960px; margin: 0 auto; padding: 32px 20px; }
+.results-header-card { background: var(--teal); color: white; border-radius: var(--radius); padding: 28px; margin-bottom: 24px; }
+.results-name { font-family: 'Crimson Pro', serif; font-size: 32px; }
+.results-info { display: flex; gap: 24px; margin-top: 8px; font-size: 14px; opacity: 0.85; }
+.scores-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.score-card { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); text-align: center; }
+.score-factor-D { border-top: 4px solid var(--D); }
+.score-factor-I { border-top: 4px solid var(--I); }
+.score-factor-S { border-top: 4px solid var(--S); }
+.score-factor-C { border-top: 4px solid var(--C); }
+.score-factor-label { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+.score-factor-name { font-size: 12px; color: var(--slate-light); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.score-row-label { font-size: 11px; color: var(--slate-light); font-weight: 700; text-transform: uppercase; }
+.score-row-val { font-size: 20px; font-weight: 800; }
+.score-row-pct { font-size: 12px; color: var(--slate-light); }
+.factor-D .score-factor-label { color: var(--D); }
+.factor-I .score-factor-label { color: var(--I); }
+.factor-S .score-factor-label { color: var(--S); }
+.factor-C .score-factor-label { color: var(--C); }
+.charts-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+.chart-wrapper { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+.chart-title { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--slate-light);
+  margin-bottom: 4px; }
+.chart-subtitle { font-size: 12px; color: var(--slate-light); margin-bottom: 12px; }
+canvas.disc-chart { width: 100%; max-width: 240px; }
+.validity-card { border-left: 4px solid; }
+.validity-valid { border-left-color: #27ae60; background: #edfaef; }
+.validity-invalid { border-left-color: #e74c3c; background: #fdf2f0; }
+.interpretation-card { background: white; border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px; }
+.interpretation-title { font-family: 'Crimson Pro', serif; font-size: 22px; color: var(--teal); margin-bottom: 16px; }
+.descriptor-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.descriptor-cell { padding: 16px; border-radius: 10px; text-align: center; }
+.descriptor-D { background: var(--D-bg); }
+.descriptor-I { background: var(--I-bg); }
+.descriptor-S { background: var(--S-bg); }
+.descriptor-C { background: var(--C-bg); }
+.descriptor-f { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.descriptor-D .descriptor-f { color: var(--D); }
+.descriptor-I .descriptor-f { color: var(--I); }
+.descriptor-S .descriptor-f { color: var(--S); }
+.descriptor-C .descriptor-f { color: var(--C); }
+.descriptor-word { font-size: 15px; font-weight: 700; }
+.descriptor-sub { font-size: 12px; color: var(--slate-light); margin-top: 2px; }
+.interp-section { margin-bottom: 18px; }
+.interp-factor-title { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
+.interp-text { font-size: 14px; line-height: 1.7; color: var(--slate); }
+.tab-row { display: flex; gap: 4px; margin-bottom: 20px; }
+.tab-btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-family: 'Nunito', sans-serif;
+  font-weight: 700; font-size: 14px; background: white; color: var(--slate-light); box-shadow: var(--shadow); }
+.tab-btn.active { background: var(--teal); color: white; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── PROFILE INTERPRETATION ── */
+.profile-interp-block { margin-bottom: 28px; }
+.profile-interp-header { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+.profile-badge { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; color: white; background: var(--teal); flex-shrink: 0; }
+.profile-badge-M { background: #8e44ad; }
+.profile-badge-L { background: #c0392b; }
+.profile-badge-T { background: var(--teal); }
+.profile-interp-meta h4 { font-family: 'Crimson Pro', serif; font-size: 18px; color: var(--slate); margin-bottom: 2px; }
+.profile-interp-meta p { font-size: 12px; color: var(--slate-light); }
+.factor-interp-row { display: flex; gap: 12px; margin-bottom: 10px; padding: 14px; border-radius: 10px; background: var(--bg); }
+.factor-interp-badge { font-size: 13px; font-weight: 900; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; }
+.fib-D { background: var(--D); }
+.fib-I { background: var(--I); }
+.fib-S { background: var(--S); }
+.fib-C { background: var(--C); }
+.factor-interp-content { flex: 1; }
+.factor-interp-title { font-size: 13px; font-weight: 800; margin-bottom: 4px; }
+.fib-D + .factor-interp-content .factor-interp-title { color: var(--D); }
+.fib-I + .factor-interp-content .factor-interp-title { color: var(--I); }
+.fib-S + .factor-interp-content .factor-interp-title { color: var(--S); }
+.fib-C + .factor-interp-content .factor-interp-title { color: var(--C); }
+.factor-interp-text { font-size: 13.5px; line-height: 1.65; color: var(--slate); }
+
+/* ── SCORE TABLE ── */
+.scores-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.scores-table th, .scores-table td { padding: 10px 14px; border: 1px solid var(--border); text-align: center; }
+.scores-table th { background: var(--teal); color: white; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.scores-table td:first-child { text-align: left; font-weight: 700; background: #f8f9fa; }
+.scores-table .factor-D { color: var(--D); font-weight: 800; }
+.scores-table .factor-I { color: var(--I); font-weight: 800; }
+.scores-table .factor-S { color: var(--S); font-weight: 800; }
+.scores-table .factor-C { color: var(--C); font-weight: 800; }
+
+/* ── PRINT ── */
+@media print {
+  .no-print { display: none !important; }
+  .view { display: block !important; min-height: auto; }
+  #view-results { display: block; }
+  body { background: white; }
+  .results-container { padding: 0; max-width: 100%; }
+  .card, .chart-wrapper, .interpretation-card, .score-card { box-shadow: none; }
+  canvas.disc-chart { page-break-inside: avoid; }
+}
+@media (max-width: 640px) {
+  .info-grid { grid-template-columns: 1fr; }
+  .scores-grid { grid-template-columns: 1fr 1fr; }
+  .charts-row { grid-template-columns: 1fr; }
+  .descriptor-grid { grid-template-columns: 1fr 1fr; }
+  .stats-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     VIEW: HOME
+══════════════════════════════════════════ -->
+<div id="view-home" class="view active">
+  <div class="home-card">
+    <div class="home-logo">CLEAVER</div>
+    <div class="home-subtitle">Sistema de Evaluación Psicométrica</div>
+    <div class="home-divider"></div>
+    <div class="home-label">¿Cómo deseas acceder?</div>
+    <button class="btn btn-primary" onclick="openEvaluatorLogin()">🔐 Acceso Evaluador</button>
+    <button class="btn btn-secondary" onclick="showView('candidate-info')">📝 Completar Prueba</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     VIEW: CANDIDATE INFO
+══════════════════════════════════════════ -->
+<div id="view-candidate-info" class="view">
+  <div class="app-header no-print">
+    <span class="app-header-title">CLEAVER</span>
+    <span class="header-user">Prueba de Comportamiento</span>
+  </div>
+  <div class="candidate-container">
+    <div class="section-title">Datos del Candidato</div>
+    <div class="section-subtitle">Por favor completa la información antes de iniciar la prueba.</div>
+    <div class="card">
+      <div class="info-grid">
+        <div class="form-group"><label>Nombre Completo *</label>
+          <input type="text" id="c-name" placeholder="Ej: Juan García López"></div>
+        <div class="form-group"><label>Puesto al que Aplica</label>
+          <input type="text" id="c-position" placeholder="Ej: Analista de Sistemas"></div>
+        <div class="form-group"><label>Fecha de Evaluación</label>
+          <input type="date" id="c-date"></div>
+        <div class="form-group"><label>Edad</label>
+          <input type="number" id="c-age" placeholder="Años" min="16" max="80"></div>
+        <div class="form-group"><label>Escolaridad</label>
+          <select id="c-education">
+            <option value="">Seleccionar...</option>
+            <option>Bachillerato</option><option>Técnico</option>
+            <option>Universidad (incompleta)</option><option>Licenciatura</option>
+            <option>Posgrado</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Estado Civil</label>
+          <select id="c-civil">
+            <option value="">Seleccionar...</option>
+            <option>Soltero/a</option><option>Casado/a</option>
+            <option>Divorciado/a</option><option>Unión libre</option><option>Viudo/a</option>
+          </select>
+        </div>
+      </div>
+      <div id="info-error" class="error-msg" style="display:none"></div>
+      <div style="margin-top:20px">
+        <button class="btn btn-primary" style="max-width:280px" onclick="startTest()">Iniciar Prueba →</button>
+      </div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--teal)">
+      <strong>Instrucciones:</strong> A continuación se presentan 24 grupos de cuatro palabras descriptivas.
+      Para cada grupo, seleccione la palabra que <strong>MÁS</strong> lo describe y la que
+      <strong>MENOS</strong> lo describe. Asegúrese de marcar solamente una palabra en cada columna.
+      Sea honesto/a; no existen respuestas correctas ni incorrectas.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     VIEW: CANDIDATE TEST
+══════════════════════════════════════════ -->
+<div id="view-candidate-test" class="view">
+  <div class="app-header no-print">
+    <span class="app-header-title">CLEAVER — Prueba</span>
+    <span class="header-user" id="test-candidate-name"></span>
+  </div>
+  <div class="candidate-container">
+    <div class="progress-label">Grupos respondidos: <span id="progress-count">0</span> de 24</div>
+    <div class="test-progress"><div class="test-progress-bar" id="test-progress-bar" style="width:0%"></div></div>
+    <div id="test-groups"></div>
+    <div class="nav-buttons">
+      <button class="btn btn-outline" onclick="showView('candidate-info')">← Regresar</button>
+      <button class="btn btn-primary" onclick="submitTest()">Enviar Prueba ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     VIEW: CANDIDATE DONE
+══════════════════════════════════════════ -->
+<div id="view-done" class="view">
+  <div class="done-card">
+    <div class="done-icon">✅</div>
+    <div class="done-title">¡Prueba Completada!</div>
+    <div class="done-text">Tu prueba ha sido enviada correctamente.<br>
+      El evaluador revisará tus resultados. ¡Gracias por tu tiempo!</div>
+    <button class="btn btn-primary" onclick="showView('home')">Volver al Inicio</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     VIEW: EVALUATOR DASHBOARD
+══════════════════════════════════════════ -->
+<div id="view-dashboard" class="view">
+  <div class="app-header no-print">
+    <span class="app-header-title">CLEAVER — Evaluador</span>
+    <div class="app-header-right">
+      <button class="btn btn-sm btn-outline" style="color:white;border-color:rgba(255,255,255,0.5)" onclick="openChangePassword()">⚙ Ajustes</button>
+      <button class="btn btn-sm btn-outline" style="color:white;border-color:rgba(255,255,255,0.5)" onclick="logout()">Salir</button>
+    </div>
+  </div>
+  <div class="dashboard-container">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-value" id="stat-total">0</div><div class="stat-label">Candidatos registrados</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-completed">0</div><div class="stat-label">Pruebas completadas</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-today">0</div><div class="stat-label">Aplicadas hoy</div></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div class="section-title" style="margin-bottom:0">Candidatos</div>
+        <div style="display:flex;gap:10px">
+          <input type="text" id="search-box" placeholder="Buscar..." style="padding:8px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;width:200px" oninput="renderDashboard()">
+          <button class="btn btn-sm btn-danger" onclick="confirmClearAll()">🗑 Limpiar todo</button>
+        </div>
+      </div>
+      <table class="candidates-table" id="candidates-table">
+        <thead><tr>
+          <th>Nombre</th><th>Puesto</th><th>Fecha</th>
+          <th>Estado</th><th>D(T)</th><th>I(T)</th><th>S(T)</th><th>C(T)</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="candidates-tbody"></tbody>
+      </table>
+      <div id="no-candidates" style="text-align:center;padding:40px;color:var(--slate-light);display:none">
+        <div style="font-size:40px;margin-bottom:12px">📋</div>
+        <div>No hay candidatos registrados aún.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     VIEW: RESULTS
+══════════════════════════════════════════ -->
+<div id="view-results" class="view">
+  <div class="app-header no-print">
+    <span class="app-header-title">CLEAVER — Resultados</span>
+    <div class="app-header-right">
+      <button class="btn btn-sm btn-outline" style="color:white;border-color:rgba(255,255,255,0.5)" onclick="showView('dashboard')">← Dashboard</button>
+      <button class="btn btn-sm btn-primary" style="background:white;color:var(--teal)" onclick="printReport()">🖨 Imprimir</button>
+    </div>
+  </div>
+  <div class="results-container" id="results-content"></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="modal-login">
+  <div class="modal-card">
+    <div class="modal-title">🔐 Acceso Evaluador</div>
+    <div class="modal-subtitle">Ingresa tu contraseña para continuar.</div>
+    <div class="form-group"><label>Contraseña</label>
+      <input type="password" id="login-password" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="error-msg" id="login-error" style="display:none">Contraseña incorrecta.</div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-login')">Cancelar</button>
+      <button class="btn btn-primary" onclick="doLogin()">Ingresar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="modal-change-pwd">
+  <div class="modal-card">
+    <div class="modal-title">⚙ Cambiar Contraseña</div>
+    <div class="form-group"><label>Contraseña actual</label>
+      <input type="password" id="pwd-current" placeholder="Contraseña actual"></div>
+    <div class="form-group"><label>Nueva contraseña</label>
+      <input type="password" id="pwd-new" placeholder="Nueva contraseña"></div>
+    <div class="form-group"><label>Confirmar nueva</label>
+      <input type="password" id="pwd-confirm" placeholder="Confirmar contraseña"></div>
+    <div class="error-msg" id="pwd-error" style="display:none"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-change-pwd')">Cancelar</button>
+      <button class="btn btn-primary" onclick="doChangePassword()">Cambiar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="modal-confirm">
+  <div class="modal-card">
+    <div class="modal-title">⚠ Confirmar</div>
+    <div class="modal-subtitle" id="confirm-text"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-confirm')">Cancelar</button>
+      <button class="btn btn-danger" id="confirm-btn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════
+//  DATA: 24 TEST GROUPS WITH DISC CODES
+// ════════════════════════════════════════════════
+const GROUPS = [
+  [{w:'Persuasivo',f:'I'},{w:'Gentil',f:'S'},{w:'Humilde',f:'C'},{w:'Original',f:'D'}],
+  [{w:'Agresivo',f:'D'},{w:'Alma de la fiesta',f:'I'},{w:'Comodino',f:'S'},{w:'Temeroso',f:'C'}],
+  [{w:'Agradable',f:'S'},{w:'Temeroso de Dios',f:'C'},{w:'Tenaz',f:'D'},{w:'Atractivo',f:'I'}],
+  [{w:'Cauteloso',f:'C'},{w:'Determinado',f:'D'},{w:'Convincente',f:'I'},{w:'Bonachón',f:'S'}],
+  [{w:'Dócil',f:'C'},{w:'Atrevido',f:'D'},{w:'Leal',f:'S'},{w:'Encantador',f:'I'}],
+  [{w:'Dispuesto',f:'S'},{w:'Deseoso',f:'D'},{w:'Consecuente',f:'C'},{w:'Entusiasta',f:'I'}],
+  [{w:'Fuerza de voluntad',f:'D'},{w:'Mente abierta',f:'C'},{w:'Complaciente',f:'S'},{w:'Animoso',f:'I'}],
+  [{w:'Confiado',f:'I'},{w:'Simpatizador',f:'S'},{w:'Tolerante',f:'C'},{w:'Afirmativo',f:'D'}],
+  [{w:'Ecuánime',f:'S'},{w:'Preciso',f:'C'},{w:'Nervioso',f:'D'},{w:'Jovial',f:'I'}],
+  [{w:'Disciplinado',f:'C'},{w:'Generoso',f:'I'},{w:'Animoso',f:'D'},{w:'Persistente',f:'S'}],
+  [{w:'Competitivo',f:'D'},{w:'Alegre',f:'I'},{w:'Considerado',f:'S'},{w:'Armonioso',f:'C'}],
+  [{w:'Admirable',f:'I'},{w:'Bondadoso',f:'S'},{w:'Resignado',f:'C'},{w:'Carácter firme',f:'D'}],
+  [{w:'Obediente',f:'S'},{w:'Quisquilloso',f:'C'},{w:'Inconquistable',f:'D'},{w:'Juguetón',f:'I'}],
+  [{w:'Respetuoso',f:'C'},{w:'Emprendedor',f:'D'},{w:'Optimista',f:'I'},{w:'Servicial',f:'S'}],
+  [{w:'Valiente',f:'D'},{w:'Inspirador',f:'I'},{w:'Sumiso',f:'S'},{w:'Tímido',f:'C'}],
+  [{w:'Adaptable',f:'C'},{w:'Disputador',f:'D'},{w:'Indiferente',f:'S'},{w:'Sangre liviana',f:'I'}],
+  [{w:'Amiguero',f:'I'},{w:'Paciente',f:'S'},{w:'Confianza en sí mismo',f:'D'},{w:'Mesurado para hablar',f:'C'}],
+  [{w:'Conforme',f:'S'},{w:'Confiable',f:'I'},{w:'Pacífico',f:'C'},{w:'Positivo',f:'D'}],
+  [{w:'Aventurero',f:'D'},{w:'Receptivo',f:'I'},{w:'Cordial',f:'S'},{w:'Moderado',f:'C'}],
+  [{w:'Indulgente',f:'S'},{w:'Esteta',f:'I'},{w:'Vigoroso',f:'D'},{w:'Sociable',f:'C'}],
+  [{w:'Parlanchín',f:'I'},{w:'Controlado',f:'C'},{w:'Convencional',f:'S'},{w:'Decisivo',f:'D'}],
+  [{w:'Cohibido',f:'C'},{w:'Exacto',f:'S'},{w:'Franco',f:'D'},{w:'Buen compañero',f:'I'}],
+  [{w:'Diplomático',f:'C'},{w:'Audaz',f:'D'},{w:'Refinado',f:'I'},{w:'Satisfecho',f:'S'}],
+  [{w:'Inquieto',f:'D'},{w:'Popular',f:'I'},{w:'Buen vecino',f:'S'},{w:'Devoto',f:'C'}]
+];
+
+// ════════════════════════════════════════════════
+//  PERCENTILE LOOKUP TABLES (from Excel)
+// ════════════════════════════════════════════════
+const PCT = {
+  M:{
+    D:{0:1,1:5,2:10,3:20,4:30,5:40,6:50,7:60,8:65,9:75,10:84,11:87,12:90,13:93,14:95,15:97,16:97,17:98,18:98,19:98,20:99},
+    I:{0:4,1:10,2:25,3:40,4:55,5:70,6:82,7:90,8:95,9:96,10:97,11:97,12:97,13:97,14:97,15:97,16:97,17:99},
+    S:{0:5,1:10,2:16,3:30,4:40,5:55,6:63,7:75,8:84,9:90,10:95,11:96,12:97,13:97,14:97,15:97,16:98,17:98,18:98,19:99},
+    C:{0:1,1:5,2:16,3:30,4:55,5:70,6:84,7:93,8:95,9:97,10:97,11:97,12:98,13:98,14:98,15:99}
+  },
+  L:{
+    D:{0:99,1:95,2:87,3:80,4:65,5:55,6:50,7:35,8:30,9:20,10:18,11:15,12:10,13:6,14:5,15:4,16:3,17:2,18:2,19:2,20:2,21:1},
+    I:{0:99,1:95,2:87,3:75,4:55,5:40,6:25,7:16,8:10,9:5,10:4,11:4,12:3,13:3,14:3,15:2,16:2,17:2,18:2,19:1},
+    S:{0:99,1:97,2:95,3:87,4:80,5:65,6:55,7:35,8:28,9:18,10:10,11:5,12:4,13:3,14:3,15:3,16:2,17:2,18:2,19:1},
+    C:{0:99,1:97,2:95,3:90,4:84,5:70,6:55,7:40,8:38,9:23,10:10,11:5,12:4,13:3,14:2,15:2,16:1}
+  },
+  T:{
+    D:{'-21':1,'-20':2,'-19':2,'-18':2,'-17':2,'-16':2,'-15':2,'-14':2,'-13':4,'-12':5,'-11':5,'-10':9,'-9':13,'-8':15,'-7':16,'-6':20,'-5':25,'-4':29,'-3':35,'-2':40,'-1':45,'0':50,'1':55,'2':60,'3':65,'4':67,'5':70,'6':75,'7':80,'8':84,'9':85,'10':90,'11':91,'12':94,'13':95,'14':96,'15':97,'16':97,'17':98,'18':98,'19':98,'20':99},
+    I:{'-19':1,'-18':2,'-17':2,'-16':2,'-15':2,'-14':2,'-13':2,'-12':2,'-11':2,'-10':3,'-9':4,'-8':5,'-7':6,'-6':10,'-5':16,'-4':20,'-3':29,'-2':35,'-1':45,'0':55,'1':60,'2':70,'3':75,'4':85,'5':90,'6':95,'7':96,'8':97,'9':97,'10':98,'11':98,'12':98,'13':98,'14':98,'15':98,'16':98,'17':99},
+    S:{'-19':1,'-18':2,'-17':2,'-16':2,'-15':2,'-14':2,'-13':2,'-12':3,'-11':4,'-10':5,'-9':8,'-8':10,'-7':15,'-6':20,'-5':25,'-4':30,'-3':35,'-2':40,'-1':50,'0':57,'1':60,'2':70,'3':75,'4':80,'5':84,'6':87,'7':91,'8':94,'9':96,'10':97,'11':97,'12':98,'13':98,'14':98,'15':98,'16':98,'17':98,'18':98,'19':99},
+    C:{'-16':1,'-15':2,'-14':2,'-13':2,'-12':2,'-11':3,'-10':4,'-9':6,'-8':9,'-7':13,'-6':20,'-5':25,'-4':35,'-3':40,'-2':55,'-1':60,'0':70,'1':75,'2':84,'3':90,'4':95,'5':96,'6':97,'7':97,'8':98,'9':98,'10':98,'11':98,'12':98,'13':98,'14':98,'15':99}
+  }
+};
+
+function getPercentile(type, factor, value) {
+  const tbl = PCT[type][factor];
+  const k = String(value);
+  if (tbl[k] !== undefined) return tbl[k];
+  if (tbl[value] !== undefined) return tbl[value];
+  const keys = Object.keys(tbl).map(Number).sort((a,b)=>a-b);
+  if (value <= keys[0]) return tbl[keys[0]];
+  if (value >= keys[keys.length-1]) return tbl[keys[keys.length-1]];
+  const upper = keys.find(k => k >= value);
+  return tbl[upper] || 50;
+}
+
+// ════════════════════════════════════════════════
+//  DESCRIPTOR WORDS (Percentile → Word, per factor)
+// ════════════════════════════════════════════════
+const DESC = {
+  D:[{p:99,w:'Belicoso'},{p:95,w:'Exigente'},{p:90,w:'Egoísta'},{p:85,w:'Enérgico'},{p:80,w:'Emprendedor'},{p:75,w:'Afirmativo'},{p:70,w:'Agresivo'},{p:65,w:'Decisivo'},{p:60,w:'Aventurero'},{p:55,w:'Inquisitivo'},{p:50,w:'Responsable'},{p:45,w:'Conservador'},{p:40,w:'Calculador'},{p:35,w:'Indeciso'},{p:30,w:'Inseguro'},{p:25,w:'Cauto'},{p:20,w:'Moderado'},{p:15,w:'Modesto'},{p:10,w:'Pacífico'},{p:5,w:'Dócil'},{p:0,w:'Sacrificado'}],
+  I:[{p:99,w:'Parlanchín'},{p:95,w:'Efusivo'},{p:90,w:'Superficial'},{p:85,w:'Magnético'},{p:80,w:'Entusiasta'},{p:75,w:'Persuasivo'},{p:70,w:'Convincente'},{p:65,w:'Equilibrado'},{p:60,w:'Optimista'},{p:55,w:'Confiable'},{p:50,w:'Sociable'},{p:45,w:'Reflexivo'},{p:40,w:'Literal'},{p:35,w:'Escéptico'},{p:30,w:'Lógico'},{p:25,w:'Desconfiado'},{p:20,w:'Incisivo'},{p:15,w:'Pesimista'},{p:10,w:'Enigmático'},{p:5,w:'Indiferente'},{p:0,w:'Retraído'}],
+  S:[{p:99,w:'Aburrido'},{p:95,w:'Sereno'},{p:90,w:'Tranquilo'},{p:85,w:'Poco demostrativo'},{p:80,w:'Pasivo'},{p:75,w:'Paciente'},{p:70,w:'Posesivo'},{p:65,w:'Predecible'},{p:60,w:'Consistente'},{p:55,w:'Firme'},{p:50,w:'Estable'},{p:45,w:'Móvil'},{p:40,w:'Activo'},{p:35,w:'Alerta'},{p:30,w:'Demostrativo'},{p:25,w:'Impaciente'},{p:20,w:'Deseoso'},{p:15,w:'Impulsivo'},{p:10,w:'Impetuoso'},{p:5,w:'Tenso'},{p:0,w:'Histérico'}],
+  C:[{p:99,w:'Dependiente'},{p:95,w:'Evasivo'},{p:90,w:'Preocupón'},{p:85,w:'Dependiente'},{p:80,w:'Convencional'},{p:75,w:'Ordenado'},{p:70,w:'Sistemático'},{p:65,w:'Exacto'},{p:60,w:'Diplomático'},{p:55,w:'Abierto'},{p:50,w:'Maduro'},{p:45,w:'Firme'},{p:40,w:'Independiente'},{p:35,w:'Testarudo'},{p:30,w:'Obstinado'},{p:25,w:'Porfiado'},{p:20,w:'Dogmático'},{p:15,w:'Arbitrario'},{p:10,w:'Rígido'},{p:5,w:'Rebelde'},{p:0,w:'Desafiante'}]
+};
+
+function getDescriptor(factor, percentile) {
+  const list = DESC[factor];
+  for (const item of list) {
+    if (percentile >= item.p) return item.w;
+  }
+  return list[list.length-1].w;
+}
+
+// ════════════════════════════════════════════════
+//  INTERPRETATION TEXTS — Three Profiles (T, M, L)
+// ════════════════════════════════════════════════
+
+// T = Comportamiento diario (perfil natural en el trabajo)
+const INTERP_T = {
+  D:{
+    high:`Alta Dominancia — Comportamiento Natural (D+): En su entorno laboral cotidiano el candidato muestra iniciativa constante, busca activamente los retos y toma decisiones con rapidez sin necesitar validación de otros. Es directo, firme y orientado a resultados; prefiere tener autoridad sobre su propio trabajo. Construye su identidad profesional en torno a los logros medibles y disfruta de resolver problemas difíciles. Puede resultar impaciente con procesos lentos y mostrarse sarcástico o dominante cuando siente que pierde el control de las situaciones.`,
+    low:`Baja Dominancia — Comportamiento Natural (D-): En el día a día el candidato opera desde un perfil colaborativo y pacífico. No busca el protagonismo ni el control; prefiere apoyar a otros y evitar el conflicto. Es cuidadoso con las decisiones, calcula bien los riesgos y raramente impone su criterio. Trabaja mejor en entornos donde se valora el consenso y la discreción. Ante la presión tiende a ceder, a ser excesivamente prudente o a adoptar una postura defensiva.`,
+    mid:`Dominancia Moderada — Comportamiento Natural: El candidato equilibra la iniciativa con la colaboración. En situaciones cotidianas puede liderar cuando es necesario, pero también sabe ceder el control. Su perfil de dominancia promedio sugiere adaptabilidad según el contexto; conviene observar los otros factores para definir su estilo directivo predominante.`
+  },
+  I:{
+    high:`Alta Influencia — Comportamiento Natural (I+): El candidato se mueve de forma natural en entornos sociales; construye relaciones con facilidad y genera confianza desde el primer contacto. Es optimista, expresivo y persuasivo, y disfruta de trabajar con personas. Promueve el trabajo en equipo, motiva a sus compañeros y se adapta con fluidez a diferentes interlocutores. Su debilidad natural es la tendencia a priorizar la relación sobre el análisis detallado, lo que puede llevarle a tomar decisiones superficiales o a descuidar el seguimiento de compromisos.`,
+    low:`Baja Influencia — Comportamiento Natural (I-): El candidato opera desde la objetividad y la lógica. Prefiere los hechos, los datos y el análisis antes que la interacción social. No es antisocial, pero le cuesta mostrar afecto o interés emocional de forma espontánea. Se desempeña mejor en roles técnicos, analíticos o independientes donde la persuasión no es un requisito central. Bajo presión puede volverse cortante, distante y difícil de abordar por su equipo.`,
+    mid:`Influencia Moderada — Comportamiento Natural: El candidato combina habilidades sociales con enfoque analítico. Puede relacionarse bien con los demás sin depender de ello, lo que lo hace versátil en roles que requieren tanto trabajo técnico como interacción con personas.`
+  },
+  S:{
+    high:`Alta Constancia — Comportamiento Natural (S+): El candidato trabaja mejor en entornos estables y predecibles. Es metódico, paciente y muy leal tanto a las personas como a los procesos. Puede realizar tareas repetitivas de forma sostenida y sin perder calidad. Desarrolla relaciones profundas y duraderas con sus compañeros y equipos. Su punto débil es la resistencia al cambio: puede acumular resentimientos silenciosamente y tener dificultad para adaptarse cuando el entorno se transforma de forma abrupta.`,
+    low:`Baja Constancia — Comportamiento Natural (S-): El candidato prospera en entornos dinámicos y variables. Le estimula la novedad, los cambios frecuentes y la diversidad de tareas. Es activo, flexible y capaz de gestionar múltiples frentes al mismo tiempo. Sin embargo, puede tener dificultades para mantener rutinas, concluir proyectos de largo aliento o sostener la atención cuando el ritmo baja.`,
+    mid:`Constancia Moderada — Comportamiento Natural: El candidato puede operar tanto en entornos estables como dinámicos con relativa comodidad. Tiene capacidad para mantener ritmos de trabajo sostenidos y, a la vez, adaptarse cuando el contexto cambia.`
+  },
+  C:{
+    high:`Alto Apego — Comportamiento Natural (C+): El candidato muestra un fuerte respeto por las normas, los procedimientos y las jerarquías. Es sistemático, preciso y muy atento al detalle; prefiere revisar toda la información disponible antes de decidir. Es diplomático y evita el conflicto, buscando siempre la armonía. Sin embargo, puede volverse dependiente de la supervisión, paralizarse ante la ambigüedad y sentirse herido ante críticas que percibe como personales.`,
+    low:`Bajo Apego — Comportamiento Natural (C-): El candidato opera con independencia, creatividad y poca tolerancia a las restricciones. Delega los detalles, improvisa con facilidad y disfruta de explorar formas no convencionales de resolver problemas. Su fortaleza es la autonomía y la innovación; su debilidad es la tendencia a ignorar protocolos, saltarse pasos y asumir riesgos sin calcularlos bien.`,
+    mid:`Apego Moderado — Comportamiento Natural: El candidato equilibra el respeto por las normas con cierto grado de independencia. Puede seguir procedimientos cuando el contexto lo requiere, pero también tiene capacidad para adaptarse cuando las reglas no son suficientes.`
+  }
+};
+
+// M = Motivación / Perfil de proyección (cómo quiere ser visto, qué lo impulsa)
+const INTERP_M = {
+  D:{
+    high:`Alta Dominancia — Motivación (M+): El candidato aspira a ser reconocido como una persona decidida, líder y orientada a resultados. Sus motivaciones más profundas incluyen el poder, el control sobre las decisiones y la posibilidad de generar impacto visible. Se proyecta en roles donde pueda asumir retos, liderar equipos y superar metas exigentes. Este perfil motivacional es indicador de ambición y energía para asumir responsabilidades de alto nivel.`,
+    low:`Baja Dominancia — Motivación (M-): El candidato no se proyecta en roles de autoridad o control; sus motivaciones apuntan hacia la colaboración, el soporte y el trabajo en equipo. No le interesa destacar como líder ni competir por posiciones de poder. Se siente más motivado cuando puede contribuir al logro colectivo desde un rol de apoyo, sin necesidad de protagonismo.`,
+    mid:`Dominancia Moderada — Motivación: El candidato tiene motivaciones equilibradas entre liderar y colaborar. No busca de forma activa el control, pero tampoco lo evita. Su energía motivacional estará más bien condicionada por el contexto del rol y las expectativas del equipo.`
+  },
+  I:{
+    high:`Alta Influencia — Motivación (M+): El candidato se proyecta como una persona sociable, carismática e influyente. Sus motivaciones incluyen la interacción con otros, el reconocimiento social y la posibilidad de inspirar o persuadir a su entorno. Disfruta de entornos colaborativos, de alta visibilidad y donde las habilidades interpersonales son valoradas. Este perfil motivacional favorece roles en ventas, atención al cliente, capacitación o comunicación.`,
+    low:`Baja Influencia — Motivación (M-): El candidato se proyecta como una persona analítica, reflexiva y centrada en los hechos. No le motiva la exposición social ni la persuasión; prefiere entornos donde el valor se mide por la precisión y el conocimiento técnico. Sus aspiraciones son más intelectuales o especializadas que relacionales.`,
+    mid:`Influencia Moderada — Motivación: El candidato combina en sus aspiraciones tanto el componente relacional como el técnico. Puede sentirse motivado tanto al trabajar con personas como al desarrollar tareas de análisis o ejecución individual.`
+  },
+  S:{
+    high:`Alta Constancia — Motivación (M+): El candidato aspira a la estabilidad, la lealtad y las relaciones duraderas. Le motiva pertenecer a equipos sólidos, mantener rutinas productivas y contribuir de forma constante y confiable. Valora los entornos donde el esfuerzo sostenido es reconocido, y prefiere crecer dentro de estructuras conocidas antes que asumir cambios frecuentes.`,
+    low:`Baja Constancia — Motivación (M-): El candidato se proyecta como una persona activa, ágil y orientada al cambio. Le motivan los retos variados, las nuevas experiencias y los entornos dinámicos. No se siente atraído por las rutinas fijas ni por roles de largo aliento que no ofrezcan novedad.`,
+    mid:`Constancia Moderada — Motivación: El candidato tiene motivaciones equilibradas entre la estabilidad y el dinamismo. Puede adaptarse a ritmos diversos sin que ninguno de los dos extremos lo desgaste de forma significativa.`
+  },
+  C:{
+    high:`Alto Apego — Motivación (M+): El candidato aspira a ser reconocido como alguien confiable, ordenado y apegado a los estándares de calidad. Le motivan la exactitud, el cumplimiento de procedimientos y la posibilidad de hacer bien las cosas desde la primera vez. Valora entornos donde la disciplina y el detalle son apreciados, y prefiere roles donde las reglas estén claramente definidas.`,
+    low:`Bajo Apego — Motivación (M-): El candidato se proyecta como alguien independiente, flexible y autónomo. Sus motivaciones incluyen la libertad de acción, la posibilidad de improvisar y la ausencia de controles estrictos. Busca entornos donde pueda actuar por iniciativa propia sin que los procedimientos limiten su creatividad.`,
+    mid:`Apego Moderado — Motivación: El candidato tiene una motivación equilibrada respecto a las normas y la autonomía. Puede operar con estructuras definidas sin sentirse restringido, y también puede adaptarse cuando las reglas son más flexibles.`
+  }
+};
+
+// L = Conducta bajo presión / Perfil de autoimagen (cómo se ve a sí mismo en momentos difíciles)
+const INTERP_L = {
+  D:{
+    high:`Alta Dominancia — Bajo Presión (L+): Cuando enfrenta situaciones de estrés o exigencia extrema, el candidato reacciona tomando el control de forma directa y decidida. Se vuelve más agresivo, firme y orientado a resultados; puede imponerse sobre otros o ignorar matices en aras de actuar con rapidez. Esta reacción puede ser una fortaleza en crisis, pero puede generar fricción con el equipo si la presión es prolongada.`,
+    low:`Baja Dominancia — Bajo Presión (L-): Ante la presión, el candidato tiende a ceder el protagonismo y evitar el enfrentamiento. Puede mostrarse indeciso, excesivamente cauteloso o buscar que otros tomen las decisiones difíciles. Esta reacción lo protege del conflicto directo, pero puede percibirse como falta de liderazgo en momentos críticos.`,
+    mid:`Dominancia Moderada — Bajo Presión: El candidato mantiene un equilibrio razonable bajo presión: actúa cuando es necesario pero sin imponer su criterio de forma extrema. Su respuesta al estrés en este factor está en la zona promedio.`
+  },
+  I:{
+    high:`Alta Influencia — Bajo Presión (L+): Bajo estrés el candidato busca activamente el apoyo de su red social y usa la comunicación como válvula de escape. Puede volverse muy expresivo, impulsivo o buscar validación constante de los demás. Tiene tendencia a priorizar las relaciones sobre el análisis en momentos de alta exigencia, lo que puede derivar en decisiones emocionales.`,
+    low:`Baja Influencia — Bajo Presión (L-): Ante la presión, el candidato se replega y reduce su comunicación. Se vuelve más analítico, desconfiado y prefiere enfrentar los problemas en solitario. Puede cerrarse al trabajo en equipo y percibirse como distante o inaccesible para sus compañeros en momentos críticos.`,
+    mid:`Influencia Moderada — Bajo Presión: Bajo presión el candidato mantiene una postura relativamente estable en cuanto a su interacción social. No se vuelve excesivamente expresivo ni tampoco se aísla de forma marcada.`
+  },
+  S:{
+    high:`Alta Constancia — Bajo Presión (L+): Ante la exigencia, el candidato recurre a su paciencia y persistencia como mecanismo de afrontamiento. Se mantiene tranquilo externamente, pero puede acumular tensiones internas y resentimientos que no expresa. Muestra resistencia al cambio forzado y puede tardar en adaptarse a nuevas demandas cuando la presión altera su entorno habitual.`,
+    low:`Baja Constancia — Bajo Presión (L-): Bajo presión el candidato actúa con urgencia e impaciencia. Busca resultados inmediatos, puede iniciar múltiples acciones al mismo tiempo sin concluir ninguna, y tiene dificultad para mantener el ritmo cuando el entorno se vuelve repetitivo o lento.`,
+    mid:`Constancia Moderada — Bajo Presión: El candidato muestra una respuesta equilibrada ante el estrés en términos de ritmo y paciencia. No se paraliza ni se dispersa de forma extrema; puede sostener el esfuerzo dentro de rangos razonables.`
+  },
+  C:{
+    high:`Alto Apego — Bajo Presión (L+): Bajo situaciones de alta exigencia, el candidato se vuelve más cauteloso y detallista. Puede buscar más información de la necesaria antes de actuar, temer cometer errores y depender en mayor medida de la supervisión o de la aprobación de otros. Esta reacción puede frenar la toma de decisiones en momentos donde se requiere agilidad.`,
+    low:`Bajo Apego — Bajo Presión (L-): Ante la presión, el candidato tiende a ignorar las normas y los protocolos, actuando de forma impulsiva y descuidada con los procedimientos. Desafía las restricciones y puede asumir riesgos innecesarios en busca de soluciones rápidas. Esto puede ser valioso en crisis puntuales, pero representa un riesgo en entornos donde el cumplimiento normativo es crítico.`,
+    mid:`Apego Moderado — Bajo Presión: El candidato mantiene un equilibrio razonable entre el respeto por los procedimientos y la acción directa cuando el contexto lo exige. Su respuesta al estrés en este factor no es extrema en ninguna dirección.`
+  }
+};
+
+function getProfileInterp(profile, factor, percentile) {
+  const map = profile === 'M' ? INTERP_M : profile === 'L' ? INTERP_L : INTERP_T;
+  if (percentile >= 60) return map[factor].high;
+  if (percentile <= 40) return map[factor].low;
+  return map[factor].mid;
+}
+
+function getInterpretation(factor, percentile) {
+  return getProfileInterp('T', factor, percentile);
+}
+
+function getQualifier(pct) {
+  if (pct >= 96) return 'Siempre es';
+  if (pct >= 91) return 'Tiende a ser';
+  if (pct >= 71) return 'En ocasiones es';
+  if (pct >= 31) return null; // no se interpreta
+  if (pct >= 11) return 'En ocasiones es';
+  if (pct >= 6) return 'Tiende a ser';
+  return 'Siempre es';
+}
+
+// ════════════════════════════════════════════════
+//  STORAGE
+// ════════════════════════════════════════════════
+const KEY_PWD = 'cleaver_password';
+const KEY_CANDS = 'cleaver_candidates';
+
+function getPassword() { return localStorage.getItem(KEY_PWD) || 'cleaver2024'; }
+function setPassword(p) { localStorage.setItem(KEY_PWD, p); }
+function getCandidates() { return JSON.parse(localStorage.getItem(KEY_CANDS) || '[]'); }
+function saveCandidates(arr) { localStorage.setItem(KEY_CANDS, JSON.stringify(arr)); }
+function addCandidate(c) { const arr = getCandidates(); arr.unshift(c); saveCandidates(arr); }
+function updateCandidate(id, data) {
+  const arr = getCandidates();
+  const idx = arr.findIndex(c => c.id === id);
+  if (idx >= 0) { arr[idx] = {...arr[idx], ...data}; saveCandidates(arr); }
+}
+function deleteCandidate(id) {
+  const arr = getCandidates().filter(c => c.id !== id);
+  saveCandidates(arr);
+}
+
+// ════════════════════════════════════════════════
+//  SCORING ENGINE
+// ════════════════════════════════════════════════
+function scoreTest(answers) {
+  const M = {D:0, I:0, S:0, C:0};
+  const L = {D:0, I:0, S:0, C:0};
+  for (let g = 0; g < 24; g++) {
+    const ans = answers[g + 1];
+    if (!ans) continue;
+    if (ans.mas) M[ans.mas] = (M[ans.mas] || 0) + 1;
+    if (ans.menos) L[ans.menos] = (L[ans.menos] || 0) + 1;
+  }
+  const T = {};
+  const pct = {M:{}, L:{}, T:{}};
+  for (const f of ['D','I','S','C']) {
+    T[f] = M[f] - L[f];
+    pct.M[f] = getPercentile('M', f, M[f]);
+    pct.L[f] = getPercentile('L', f, L[f]);
+    pct.T[f] = getPercentile('T', f, T[f]);
+  }
+  const tSum = T.D + T.I + T.S + T.C;
+  const valid = Math.abs(tSum) <= 3;
+  return {M, L, T, pct, tSum, valid};
+}
+
+// ════════════════════════════════════════════════
+//  VIEW MANAGEMENT
+// ════════════════════════════════════════════════
+const VIEWS = ['home','candidate-info','candidate-test','done','dashboard','results'];
+let currentView = 'home';
+let currentCandidateId = null;
+
+function showView(name) {
+  VIEWS.forEach(v => {
+    const el = document.getElementById(`view-${v}`);
+    if (el) el.classList.remove('active');
+  });
+  const el = document.getElementById(`view-${name}`);
+  if (el) { el.classList.add('active'); currentView = name; }
+  window.scrollTo(0, 0);
+}
+
+// ════════════════════════════════════════════════
+//  AUTH
+// ════════════════════════════════════════════════
+let evaluatorLoggedIn = false;
+
+function openEvaluatorLogin() {
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-error').style.display = 'none';
+  openModal('modal-login');
+  setTimeout(() => document.getElementById('login-password').focus(), 100);
+}
+
+function doLogin() {
+  const pwd = document.getElementById('login-password').value;
+  if (pwd === getPassword()) {
+    closeModal('modal-login');
+    evaluatorLoggedIn = true;
+    renderDashboard();
+    showView('dashboard');
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+function logout() {
+  evaluatorLoggedIn = false;
+  showView('home');
+}
+
+function openChangePassword() {
+  ['pwd-current','pwd-new','pwd-confirm'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('pwd-error').style.display = 'none';
+  openModal('modal-change-pwd');
+}
+
+function doChangePassword() {
+  const cur = document.getElementById('pwd-current').value;
+  const nw = document.getElementById('pwd-new').value;
+  const cf = document.getElementById('pwd-confirm').value;
+  const errEl = document.getElementById('pwd-error');
+  errEl.style.display = 'none';
+  if (cur !== getPassword()) { errEl.textContent = 'La contraseña actual no es correcta.'; errEl.style.display = 'block'; return; }
+  if (nw.length < 6) { errEl.textContent = 'La nueva contraseña debe tener al menos 6 caracteres.'; errEl.style.display = 'block'; return; }
+  if (nw !== cf) { errEl.textContent = 'Las contraseñas no coinciden.'; errEl.style.display = 'block'; return; }
+  setPassword(nw);
+  closeModal('modal-change-pwd');
+  alert('Contraseña actualizada correctamente.');
+}
+
+// ════════════════════════════════════════════════
+//  MODAL MANAGEMENT
+// ════════════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+let confirmCallback = null;
+function showConfirm(text, callback) {
+  document.getElementById('confirm-text').textContent = text;
+  confirmCallback = callback;
+  document.getElementById('confirm-btn').onclick = () => { closeModal('modal-confirm'); callback(); };
+  openModal('modal-confirm');
+}
+
+function confirmClearAll() {
+  showConfirm('¿Eliminar TODOS los candidatos registrados? Esta acción no se puede deshacer.', () => {
+    saveCandidates([]);
+    renderDashboard();
+  });
+}
+
+// ════════════════════════════════════════════════
+//  CANDIDATE FLOW
+// ════════════════════════════════════════════════
+let testState = {}; // {candidateInfo, answers}
+
+function startTest() {
+  const name = document.getElementById('c-name').value.trim();
+  if (!name) {
+    document.getElementById('info-error').textContent = 'El nombre es requerido.';
+    document.getElementById('info-error').style.display = 'block';
+    return;
+  }
+  document.getElementById('info-error').style.display = 'none';
+  testState = {
+    candidateInfo: {
+      name,
+      position: document.getElementById('c-position').value,
+      date: document.getElementById('c-date').value || new Date().toISOString().split('T')[0],
+      age: document.getElementById('c-age').value,
+      education: document.getElementById('c-education').value,
+      civil: document.getElementById('c-civil').value
+    },
+    answers: {}
+  };
+  document.getElementById('test-candidate-name').textContent = name;
+  renderTestGroups();
+  showView('candidate-test');
+}
+
+function renderTestGroups() {
+  const container = document.getElementById('test-groups');
+  container.innerHTML = '';
+  GROUPS.forEach((group, gi) => {
+    const gNum = gi + 1;
+    const div = document.createElement('div');
+    div.className = 'group-card';
+    div.id = `group-${gNum}`;
+    let rows = `
+      <div class="group-header">
+        <span class="group-number">Grupo ${gNum}</span>
+        <span id="gstatus-${gNum}" style="font-size:12px;color:var(--slate-light)">Pendiente</span>
+      </div>
+      <div class="group-labels">
+        <div class="group-label-hdr" style="text-align:left">Palabra</div>
+        <div class="group-label-hdr" style="color:var(--teal)">MÁS (+)</div>
+        <div class="group-label-hdr" style="color:#e74c3c">MENOS (-)</div>
+      </div>`;
+    // Shuffle display order for aesthetics (keep original index for scoring)
+    group.forEach((word, wi) => {
+      rows += `
+        <div class="word-row">
+          <div class="word-text">${word.w}</div>
+          <div class="word-check mas">
+            <input type="radio" name="mas-${gNum}" id="mas-${gNum}-${wi}" value="${word.f}" onchange="onAnswer(${gNum},'mas','${word.f}')">
+            <label for="mas-${gNum}-${wi}">+</label>
+          </div>
+          <div class="word-check menos">
+            <input type="radio" name="menos-${gNum}" id="menos-${gNum}-${wi}" value="${word.f}" onchange="onAnswer(${gNum},'menos','${word.f}')">
+            <label for="menos-${gNum}-${wi}">−</label>
+          </div>
+        </div>`;
+    });
+    div.innerHTML = rows;
+    container.appendChild(div);
+  });
+  updateProgress();
+}
+
+function onAnswer(groupNum, type, factor) {
+  if (!testState.answers[groupNum]) testState.answers[groupNum] = {};
+  testState.answers[groupNum][type] = factor;
+  const ans = testState.answers[groupNum];
+  const card = document.getElementById(`group-${groupNum}`);
+  const status = document.getElementById(`gstatus-${groupNum}`);
+  // Prevent same factor for mas and menos in same group by checking word index
+  // (factory codes can be same? No - each group has unique factors. But visually let's check)
+  if (ans.mas && ans.menos) {
+    // Find if it's the SAME word (same radio group but we'd need word index)
+    // Since each factor is unique per group, we just check if factors match
+    // Actually a person could pick D for mas and D for menos IF the test had duplicate factors
+    // But our groups have unique factors. So just mark complete.
+    status.textContent = '✓ Completo';
+    card.classList.add('group-valid');
+    card.classList.remove('group-warning');
+  } else {
+    status.textContent = '⚠ Falta ' + (ans.mas ? 'MENOS' : 'MÁS');
+    card.classList.add('group-warning');
+    card.classList.remove('group-valid');
+  }
+  updateProgress();
+}
+
+function updateProgress() {
+  let count = 0;
+  for (let g = 1; g <= 24; g++) {
+    const ans = testState.answers[g];
+    if (ans && ans.mas && ans.menos) count++;
+  }
+  document.getElementById('progress-count').textContent = count;
+  document.getElementById('test-progress-bar').style.width = (count / 24 * 100) + '%';
+}
+
+function submitTest() {
+  // Validate all 24 groups
+  const missing = [];
+  for (let g = 1; g <= 24; g++) {
+    const ans = testState.answers[g];
+    if (!ans || !ans.mas || !ans.menos) missing.push(g);
+    // Additional check: same word (same factor) selected for both mas and menos
+    if (ans && ans.mas && ans.menos && ans.mas === ans.menos) {
+      missing.push(g);
+    }
+  }
+  if (missing.length > 0) {
+    alert(`Por favor completa los grupos: ${missing.slice(0,10).join(', ')}${missing.length > 10 ? '...' : ''}`);
+    const firstCard = document.getElementById(`group-${missing[0]}`);
+    if (firstCard) firstCard.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+  const scores = scoreTest(testState.answers);
+  const candidate = {
+    id: 'c_' + Date.now(),
+    ...testState.candidateInfo,
+    answers: testState.answers,
+    scores,
+    createdAt: new Date().toISOString()
+  };
+  addCandidate(candidate);
+  showView('done');
+}
+
+// ════════════════════════════════════════════════
+//  DASHBOARD
+// ════════════════════════════════════════════════
+function renderDashboard() {
+  const candidates = getCandidates();
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('stat-total').textContent = candidates.length;
+  document.getElementById('stat-completed').textContent = candidates.length;
+  document.getElementById('stat-today').textContent = candidates.filter(c => c.date === today || c.createdAt?.startsWith(today)).length;
+  const q = (document.getElementById('search-box')?.value || '').toLowerCase();
+  const filtered = q ? candidates.filter(c => c.name.toLowerCase().includes(q) || (c.position||'').toLowerCase().includes(q)) : candidates;
+  const tbody = document.getElementById('candidates-tbody');
+  const noEl = document.getElementById('no-candidates');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    noEl.style.display = 'block';
+    return;
+  }
+  noEl.style.display = 'none';
+  tbody.innerHTML = filtered.map(c => {
+    const s = c.scores;
+    const dt = (pct, f) => `<span style="color:var(--${f});font-weight:700">${pct}</span>`;
+    return `<tr>
+      <td><strong>${c.name}</strong></td>
+      <td>${c.position || '—'}</td>
+      <td>${c.date || '—'}</td>
+      <td><span class="status-badge badge-completed">Completo</span></td>
+      <td>${dt(s.pct.T.D,'D')}</td>
+      <td>${dt(s.pct.T.I,'I')}</td>
+      <td>${dt(s.pct.T.S,'S')}</td>
+      <td>${dt(s.pct.T.C,'C')}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-sm btn-primary" onclick="viewResults('${c.id}')">Ver</button>
+        <button class="btn btn-sm btn-danger" style="margin-left:6px" onclick="confirmDeleteCandidate('${c.id}','${c.name.replace(/'/g,"\\'")}')">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function confirmDeleteCandidate(id, name) {
+  showConfirm(`¿Eliminar el registro de "${name}"?`, () => {
+    deleteCandidate(id);
+    renderDashboard();
+  });
+}
+
+// ════════════════════════════════════════════════
+//  RESULTS VIEW
+// ════════════════════════════════════════════════
+function viewResults(id) {
+  currentCandidateId = id;
+  const c = getCandidates().find(x => x.id === id);
+  if (!c) return;
+  renderResults(c);
+  showView('results');
+}
+
+function renderResults(c) {
+  const s = c.scores;
+  const factors = ['D','I','S','C'];
+  const factorNames = {D:'Dominancia', I:'Influencia', S:'Constancia', C:'Apego'};
+
+  // Validity
+  const validColor = s.valid ? 'valid' : 'invalid';
+  const validText = s.valid ? `✅ Prueba VÁLIDA (suma T = ${s.tSum})` : `⚠ Prueba posiblemente INVÁLIDA (suma T = ${s.tSum}, fuera del rango -3 a +3)`;
+
+  // Factor scores table
+  const tableRows = [
+    {label:'M — Motivación', key:'M'},
+    {label:'L — Conducta bajo Presión', key:'L'},
+    {label:'T — Comportamiento Diario', key:'T'}
+  ].map(row => `<tr>
+    <td>${row.label}</td>
+    ${factors.map(f => `<td class="factor-${f}">${s[row.key][f]} <span style="color:var(--slate-light);font-size:12px">(${s.pct[row.key][f]}%)</span></td>`).join('')}
+  </tr>`).join('');
+
+  // Descriptor words for T
+  const descCards = factors.map(f => {
+    const pct = s.pct.T[f];
+    const word = getDescriptor(f, pct);
+    const qual = getQualifier(pct) || 'Zona promedio';
+    return `<div class="descriptor-cell descriptor-${f}">
+      <div class="descriptor-f">${f} — ${factorNames[f]}</div>
+      <div class="descriptor-word">${word}</div>
+      <div class="descriptor-sub">${qual} · ${pct}%ile</div>
+    </div>`;
+  }).join('');
+
+  // Build interpretation for one profile (M, L, or T)
+  function buildProfileInterp(profileKey, profileLabel, profileDesc, badgeClass, emoji) {
+    const rows = factors.map(f => {
+      const pct = s.pct[profileKey][f];
+      const text = getProfileInterp(profileKey, f, pct);
+      const label = pct >= 60 ? `Alto (${pct}%ile)` : pct <= 40 ? `Bajo (${pct}%ile)` : `Promedio (${pct}%ile)`;
+      const levelColor = pct >= 60 ? `var(--${f})` : pct <= 40 ? '#888' : '#aaa';
+      return `<div class="factor-interp-row">
+        <div class="factor-interp-badge fib-${f}">${f}</div>
+        <div class="factor-interp-content">
+          <div class="factor-interp-title" style="color:var(--${f})">${factorNames[f]} — <span style="color:${levelColor};font-size:12px">${label}</span></div>
+          <div class="factor-interp-text">${text}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div class="profile-interp-block">
+      <div class="profile-interp-header">
+        <div class="profile-badge ${badgeClass}">${profileKey}</div>
+        <div class="profile-interp-meta">
+          <h4>${emoji} ${profileLabel}</h4>
+          <p>${profileDesc}</p>
+        </div>
+      </div>
+      ${rows}
+    </div>`;
+  }
+
+  const interpHtml =
+    buildProfileInterp('T','Comportamiento Diario','Perfil natural — cómo actúa el candidato en su trabajo cotidiano','profile-badge-T','🧠') +
+    `<hr style="border:none;border-top:2px dashed var(--border);margin:28px 0">` +
+    buildProfileInterp('M','Motivación','Perfil de proyección — qué motiva al candidato y cómo quiere ser visto','profile-badge-M','🎯') +
+    `<hr style="border:none;border-top:2px dashed var(--border);margin:28px 0">` +
+    buildProfileInterp('L','Conducta bajo Presión','Perfil de estrés — cómo reacciona el candidato en situaciones de alta exigencia','profile-badge-L','⚡');
+
+  const html = `
+    <div class="results-header-card">
+      <div class="results-name">${c.name}</div>
+      <div class="results-info">
+        <span>📋 ${c.position || 'Sin puesto especificado'}</span>
+        <span>📅 ${c.date || '—'}</span>
+        ${c.age ? `<span>🎂 ${c.age} años</span>` : ''}
+        ${c.education ? `<span>🎓 ${c.education}</span>` : ''}
+      </div>
+    </div>
+
+    <div class="card validity-card validity-${validColor}">
+      <strong>${validText}</strong>
+      ${!s.valid ? '<br><small>Se recomienda repetir la prueba verificando que el candidato comprendió las instrucciones.</small>' : ''}
+    </div>
+
+    <div class="tab-row no-print">
+      <button class="tab-btn active" onclick="switchTab('tab-summary')">Resumen</button>
+      <button class="tab-btn" onclick="switchTab('tab-charts')">Gráficas</button>
+      <button class="tab-btn" onclick="switchTab('tab-interpretation')">Interpretación</button>
+    </div>
+
+    <!-- TAB: SUMMARY -->
+    <div id="tab-summary" class="tab-panel active">
+      <div class="card" style="margin-bottom:20px">
+        <h3 style="font-family:Crimson Pro,serif;font-size:20px;color:var(--teal);margin-bottom:16px">Tabla de Resultados DISC</h3>
+        <table class="scores-table">
+          <thead><tr><th>Perfil</th>${factors.map(f=>`<th class="factor-${f}">${f} — ${factorNames[f]}</th>`).join('')}</tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
+      <div class="descriptor-grid">${descCards}</div>
+    </div>
+
+    <!-- TAB: CHARTS -->
+    <div id="tab-charts" class="tab-panel">
+      <div class="charts-row">
+        <div class="chart-wrapper">
+          <div class="chart-title">T — Comportamiento Diario</div>
+          <div class="chart-subtitle">Perfil natural en el trabajo</div>
+          <canvas id="chart-T" class="disc-chart" width="220" height="320"></canvas>
+        </div>
+        <div class="chart-wrapper">
+          <div class="chart-title">M — Motivación</div>
+          <div class="chart-subtitle">Proyección / qué impulsa al candidato</div>
+          <canvas id="chart-M" class="disc-chart" width="220" height="320"></canvas>
+        </div>
+        <div class="chart-wrapper">
+          <div class="chart-title">L — Conducta bajo Presión</div>
+          <div class="chart-subtitle">Reacción en situaciones de alto estrés</div>
+          <canvas id="chart-L" class="disc-chart" width="220" height="320"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: INTERPRETATION -->
+    <div id="tab-interpretation" class="tab-panel">
+      <div class="interpretation-card">
+        <div class="interpretation-title">Interpretación Detallada por Perfil</div>
+        <p style="font-size:13px;color:var(--slate-light);margin-bottom:24px;line-height:1.6">
+          Cada perfil revela una dimensión distinta del comportamiento del candidato. <strong>T</strong> describe su conducta natural diaria,
+          <strong>M</strong> muestra sus motivaciones y aspiraciones, y <strong>L</strong> indica cómo reacciona bajo presión o estrés.
+        </p>
+        ${interpHtml}
+      </div>
+      <div class="interpretation-card" style="margin-top:20px">
+        <div class="interpretation-title">Palabras Descriptivas por Gráfica</div>
+        <table class="scores-table">
+          <thead><tr><th>Perfil</th>${factors.map(f=>`<th class="factor-${f}">${f}</th>`).join('')}</tr></thead>
+          <tbody>
+            ${['T','M','L'].map(type => `<tr>
+              <td>${type === 'T' ? '🧠 T — Comportamiento' : type === 'M' ? '🎯 M — Motivación' : '⚡ L — Bajo Presión'}</td>
+              ${factors.map(f => `<td><strong>${getDescriptor(f, s.pct[type][f])}</strong><br><small style="color:var(--slate-light)">${s.pct[type][f]}%ile</small></td>`).join('')}
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('results-content').innerHTML = html;
+
+  // Draw charts after DOM is ready
+  setTimeout(() => {
+    drawDISCChart('chart-T', factors.map(f => s.pct.T[f]), factors);
+    drawDISCChart('chart-M', factors.map(f => s.pct.M[f]), factors);
+    drawDISCChart('chart-L', factors.map(f => s.pct.L[f]), factors);
+  }, 50);
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  const btns = document.querySelectorAll('.tab-btn');
+  const tabs = ['tab-summary','tab-charts','tab-interpretation'];
+  btns[tabs.indexOf(tabId)]?.classList.add('active');
+  // Draw charts when chart tab is activated
+  if (tabId === 'tab-charts') {
+    const c = getCandidates().find(x => x.id === currentCandidateId);
+    if (c) {
+      const s = c.scores;
+      const factors = ['D','I','S','C'];
+      setTimeout(() => {
+        drawDISCChart('chart-T', factors.map(f => s.pct.T[f]), factors);
+        drawDISCChart('chart-M', factors.map(f => s.pct.M[f]), factors);
+        drawDISCChart('chart-L', factors.map(f => s.pct.L[f]), factors);
+      }, 50);
+    }
+  }
+}
+
+// ════════════════════════════════════════════════
+//  DISC CHART DRAWING (Canvas)
+// ════════════════════════════════════════════════
+function drawDISCChart(canvasId, percentiles, factors) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const colors = {D:'#c0392b', I:'#d4881a', S:'#1e8449', C:'#1a5276'};
+  const padL = 36, padR = 12, padT = 14, padB = 30;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  const barW = Math.floor(chartW / 5);
+  const barSpacing = (chartW - barW * 4) / 5;
+
+  // Background
+  ctx.fillStyle = '#f8f9fa';
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid lines and Y labels
+  const gridLevels = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 99];
+  ctx.font = '10px Nunito, sans-serif';
+  ctx.textAlign = 'right';
+  gridLevels.forEach(level => {
+    const y = padT + chartH - (level / 99) * chartH;
+    ctx.strokeStyle = level === 50 ? '#aaa' : '#dde3e8';
+    ctx.lineWidth = level === 50 ? 1.5 : 1;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+    ctx.fillStyle = level === 50 ? '#666' : '#aaa';
+    ctx.fillText(level, padL - 4, y + 3);
+  });
+
+  // Bars and connecting line
+  const pts = [];
+  factors.forEach((f, fi) => {
+    const pct = percentiles[fi];
+    const x = padL + barSpacing + fi * (barW + barSpacing);
+    const barH = (pct / 99) * chartH;
+    const y = padT + chartH - barH;
+
+    // Bar
+    const grad = ctx.createLinearGradient(x, y, x, padT + chartH);
+    grad.addColorStop(0, colors[f]);
+    grad.addColorStop(1, colors[f] + '44');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(x, y, barW, barH, [4, 4, 0, 0]) : ctx.rect(x, y, barW, barH);
+    ctx.fill();
+
+    // Value on top
+    ctx.fillStyle = colors[f];
+    ctx.font = 'bold 11px Nunito, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(pct, x + barW / 2, y - 4);
+
+    pts.push({x: x + barW / 2, y});
+
+    // Factor label at bottom
+    ctx.fillStyle = colors[f];
+    ctx.font = 'bold 12px Nunito, sans-serif';
+    ctx.fillText(f, x + barW / 2, H - 6);
+  });
+
+  // Connecting line
+  ctx.strokeStyle = '#888';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 3]);
+  ctx.beginPath();
+  pts.forEach((pt, i) => i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y));
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Dots
+  pts.forEach((pt, fi) => {
+    ctx.fillStyle = colors[factors[fi]];
+    ctx.beginPath();
+    ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
+// ════════════════════════════════════════════════
+//  PRINT
+// ════════════════════════════════════════════════
+function printReport() {
+  // Make all tabs visible for print
+  document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'block');
+  // Redraw all charts
+  const c = getCandidates().find(x => x.id === currentCandidateId);
+  if (c) {
+    const s = c.scores;
+    const factors = ['D','I','S','C'];
+    drawDISCChart('chart-T', factors.map(f => s.pct.T[f]), factors);
+    drawDISCChart('chart-M', factors.map(f => s.pct.M[f]), factors);
+    drawDISCChart('chart-L', factors.map(f => s.pct.L[f]), factors);
+  }
+  setTimeout(() => {
+    window.print();
+    // Restore tab visibility after print
+    setTimeout(() => {
+      document.querySelectorAll('.tab-panel').forEach(p => p.style.display = '');
+      document.querySelectorAll('.tab-panel.active').forEach(p => p.style.display = 'block');
+    }, 1000);
+  }, 200);
+}
+
+// ════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // Set default date for candidate form
+  document.getElementById('c-date').value = new Date().toISOString().split('T')[0];
+});
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.add('hidden');
+  });
+});
+</script>
+</body>
+</html>

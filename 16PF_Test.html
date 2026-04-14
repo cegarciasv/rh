@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>16PF — Evaluación de Personalidad</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap');
+
+  :root {
+    --navy: #0d1b2a;
+    --deep: #1b2a3b;
+    --steel: #2e4057;
+    --accent: #c8973a;
+    --gold: #e8b455;
+    --light: #f4f0e8;
+    --cream: #faf8f4;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #ddd5c8;
+    --success: #2d6a4f;
+    --card: #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  .app-header {
+    background: var(--navy);
+    color: white;
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+  .app-header .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .app-header .logo span { color: var(--gold); }
+  .header-badge {
+    font-size: 0.75rem;
+    background: rgba(200,151,58,0.2);
+    color: var(--gold);
+    padding: 4px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(200,151,58,0.4);
+  }
+
+  /* ===== PAGES ===== */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ===== ADMIN LOGIN ===== */
+  #page-login {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--navy) 0%, var(--steel) 100%);
+  }
+  .login-box {
+    background: white;
+    border-radius: 16px;
+    padding: 48px 40px;
+    width: 380px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    text-align: center;
+  }
+  .login-box h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+  .login-box p { color: var(--muted); margin-bottom: 28px; font-size: 0.9rem; }
+  .form-group { margin-bottom: 18px; text-align: left; }
+  .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--steel); margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
+  .form-group input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: 'Source Sans 3', sans-serif;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .form-group input:focus { border-color: var(--accent); }
+  .btn-primary {
+    width: 100%;
+    background: var(--navy);
+    color: white;
+    border: none;
+    padding: 13px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Source Sans 3', sans-serif;
+    transition: background 0.2s, transform 0.1s;
+    letter-spacing: 0.5px;
+  }
+  .btn-primary:hover { background: var(--steel); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+  .error-msg { color: #c0392b; font-size: 0.85rem; margin-top: 10px; display: none; }
+  .login-divider { margin: 20px 0; border: none; border-top: 1px solid var(--border); }
+  .candidate-link {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .candidate-link a { color: var(--accent); text-decoration: none; font-weight: 600; }
+
+  /* ===== CANDIDATE ENTRY ===== */
+  #page-candidate-entry {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--cream);
+    padding: 40px 20px;
+  }
+  .entry-box {
+    background: white;
+    border-radius: 16px;
+    padding: 48px 44px;
+    width: 520px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.1);
+  }
+  .entry-box .icon { font-size: 2.5rem; margin-bottom: 16px; }
+  .entry-box h2 { font-family: 'Playfair Display', serif; font-size: 1.9rem; color: var(--navy); margin-bottom: 8px; }
+  .entry-box .subtitle { color: var(--muted); margin-bottom: 28px; font-size: 0.95rem; line-height: 1.5; }
+  .info-box {
+    background: var(--light);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 16px;
+    margin-bottom: 24px;
+    font-size: 0.88rem;
+    color: var(--steel);
+    line-height: 1.6;
+  }
+
+  /* ===== TEST PAGE ===== */
+  #page-test {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+  .progress-header {
+    background: white;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+  }
+  .progress-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .progress-top h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--navy);
+  }
+  .progress-count { font-size: 0.9rem; color: var(--muted); font-weight: 500; }
+  .progress-bar-bg {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  .question-card {
+    background: white;
+    border-radius: 12px;
+    padding: 32px 28px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+    transition: box-shadow 0.2s;
+  }
+  .question-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+  .question-card.answered { border-left: 4px solid var(--gold); }
+  .question-card.unanswered-highlight { border: 2px solid #e74c3c !important; }
+
+  .q-number {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .q-text {
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: var(--text);
+    margin-bottom: 20px;
+    font-weight: 400;
+  }
+  .options-group { display: flex; flex-direction: column; gap: 10px; }
+  .option-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 16px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    transition: all 0.18s;
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+  .option-label:hover { border-color: var(--accent); background: rgba(200,151,58,0.04); }
+  .option-label input[type=radio] { display: none; }
+  .option-label.selected {
+    border-color: var(--accent);
+    background: rgba(200,151,58,0.08);
+    font-weight: 500;
+    color: var(--navy);
+  }
+  .option-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .option-label.selected .option-circle {
+    border-color: var(--accent);
+    background: var(--accent);
+  }
+  .option-label.selected .option-circle::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: white;
+  }
+  .option-key {
+    font-weight: 700;
+    color: var(--muted);
+    min-width: 20px;
+    font-size: 0.85rem;
+  }
+  .option-label.selected .option-key { color: var(--accent); }
+
+  /* Navigation */
+  .test-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid var(--border);
+    padding: 16px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    z-index: 50;
+  }
+  .nav-info { font-size: 0.88rem; color: var(--muted); }
+  .nav-info strong { color: var(--text); }
+  .btn-nav {
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Source Sans 3', sans-serif;
+    transition: all 0.18s;
+  }
+  .btn-back { background: var(--light); color: var(--steel); border: 1px solid var(--border); }
+  .btn-back:hover { background: var(--border); }
+  .btn-next { background: var(--navy); color: white; }
+  .btn-next:hover { background: var(--steel); }
+  .btn-submit { background: var(--success); color: white; }
+  .btn-submit:hover { background: #1b4332; }
+
+  /* Page sections (10 questions each) */
+  .section-header {
+    text-align: center;
+    padding: 28px 20px 20px;
+    margin-bottom: 8px;
+  }
+  .section-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--navy);
+  }
+  .section-header p { color: var(--muted); font-size: 0.9rem; margin-top: 6px; }
+
+  /* ===== RESULTS PAGE ===== */
+  #page-results {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 36px 20px 60px;
+  }
+  .results-header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .results-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+  .results-header p { color: var(--muted); font-size: 1rem; }
+  .candidate-info-box {
+    background: var(--navy);
+    color: white;
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 32px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .cinfo-item label { font-size: 0.78rem; opacity: 0.6; letter-spacing: 0.5px; text-transform: uppercase; display: block; margin-bottom: 4px; }
+  .cinfo-item span { font-size: 1.05rem; font-weight: 600; }
+
+  .results-section {
+    background: white;
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+  }
+  .results-section h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: var(--navy);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--light);
+  }
+
+  /* Factor rows */
+  .factor-row {
+    display: grid;
+    grid-template-columns: 180px 1fr 60px;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--light);
+  }
+  .factor-row:last-child { border-bottom: none; }
+  .factor-name { font-size: 0.88rem; font-weight: 600; color: var(--steel); }
+  .factor-low { font-size: 0.75rem; color: var(--muted); }
+  .bar-container { position: relative; height: 10px; background: var(--light); border-radius: 5px; overflow: visible; }
+  .bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    transition: width 0.8s ease;
+  }
+  .bar-marker {
+    position: absolute;
+    top: -3px;
+    width: 16px;
+    height: 16px;
+    background: var(--navy);
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px var(--navy);
+    transform: translateX(-50%);
+    transition: left 0.8s ease;
+  }
+  .factor-score { font-size: 1rem; font-weight: 700; color: var(--navy); text-align: center; }
+  .factor-label { font-size: 0.72rem; color: var(--accent); font-weight: 600; text-align: right; }
+
+  /* Global factors */
+  .global-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-top: 8px;
+  }
+  .global-card {
+    background: var(--light);
+    border-radius: 10px;
+    padding: 18px;
+    text-align: center;
+    border: 1.5px solid var(--border);
+  }
+  .global-card .g-name { font-size: 0.8rem; font-weight: 700; color: var(--steel); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; }
+  .global-card .g-score { font-size: 2rem; font-weight: 700; color: var(--navy); font-family: 'Playfair Display', serif; }
+  .global-card .g-label { font-size: 0.78rem; color: var(--accent); font-weight: 600; margin-top: 4px; }
+
+  /* Interpretation */
+  .interp-box {
+    background: var(--light);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 12px;
+    border-left: 4px solid var(--accent);
+  }
+  .interp-box h4 { font-size: 0.95rem; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+  .interp-box p { font-size: 0.9rem; line-height: 1.7; color: var(--steel); }
+
+  /* Print controls */
+  .print-bar {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .btn-print {
+    padding: 12px 28px;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Source Sans 3', sans-serif;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-print-main { background: var(--navy); color: white; }
+  .btn-print-main:hover { background: var(--steel); }
+  .btn-new-test { background: var(--accent); color: white; }
+  .btn-new-test:hover { background: #b8882a; }
+
+  /* ===== THANK YOU PAGE ===== */
+  #page-thankyou {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--cream);
+    padding: 40px 20px;
+  }
+  .thankyou-box {
+    background: white;
+    border-radius: 16px;
+    padding: 56px 48px;
+    text-align: center;
+    max-width: 500px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.1);
+  }
+  .thankyou-box .check { font-size: 3.5rem; margin-bottom: 20px; }
+  .thankyou-box h2 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--navy); margin-bottom: 12px; }
+  .thankyou-box p { color: var(--muted); line-height: 1.7; font-size: 1rem; }
+
+  /* ===== ADMIN PANEL ===== */
+  #page-admin {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+  .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    flex-wrap: gap;
+    gap: 16px;
+  }
+  .admin-header h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--navy); }
+  .admin-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn-secondary {
+    padding: 9px 18px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Source Sans 3', sans-serif;
+    color: var(--steel);
+    transition: all 0.18s;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { border-color: #e74c3c; color: #e74c3c; }
+  .btn-danger:hover { background: #fef2f2; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    text-align: center;
+  }
+  .stat-card .stat-val { font-size: 2.2rem; font-weight: 700; color: var(--navy); font-family: 'Playfair Display', serif; }
+  .stat-card .stat-lbl { font-size: 0.82rem; color: var(--muted); margin-top: 4px; font-weight: 500; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    background: var(--navy);
+    color: white;
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 0.82rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  tbody tr { transition: background 0.15s; }
+  tbody tr:hover { background: var(--light); }
+  tbody td { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 0.9rem; color: var(--text); }
+  .table-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid var(--border); }
+  .score-chip {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  .score-high { background: #d1fae5; color: #065f46; }
+  .score-mid  { background: #fef3c7; color: #92400e; }
+  .score-low  { background: #fee2e2; color: #991b1b; }
+  .action-btns { display: flex; gap: 8px; }
+  .btn-view { background: var(--navy); color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 0.82rem; cursor: pointer; font-family: 'Source Sans 3', sans-serif; font-weight: 600; }
+  .btn-del { background: white; color: #e74c3c; border: 1.5px solid #e74c3c; padding: 6px 10px; border-radius: 6px; font-size: 0.82rem; cursor: pointer; font-family: 'Source Sans 3', sans-serif; }
+
+  /* ===== PRINT STYLES ===== */
+  @media print {
+    .app-header, .print-bar, .no-print { display: none !important; }
+    body { background: white; }
+    #page-results { padding: 0; }
+    .results-header h1 { font-size: 1.6rem; }
+    .results-section { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+    .candidate-info-box { background: #1a1a2e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  /* ===== UTILS ===== */
+  .hidden { display: none !important; }
+  .text-center { text-align: center; }
+  .mt-16 { margin-top: 16px; }
+
+  /* Animations */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .fadeIn { animation: fadeIn 0.35s ease forwards; }
+
+  .validation-msg {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    color: #b91c1c;
+    font-size: 0.88rem;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- APP HEADER -->
+<header class="app-header" id="main-header">
+  <div class="logo">16<span>PF</span> · Factores de Personalidad</div>
+  <div class="header-badge" id="header-mode">Evaluación</div>
+</header>
+
+<!-- ============================================================ -->
+<!-- PAGE: ADMIN LOGIN -->
+<!-- ============================================================ -->
+<div id="page-login" class="page active" style="display:flex;">
+  <div class="login-box fadeIn">
+    <h2>Panel Administrativo</h2>
+    <p>Acceso restringido para evaluadores</p>
+    <div class="form-group">
+      <label>Usuario</label>
+      <input type="text" id="login-user" placeholder="administrador" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <div class="error-msg" id="login-error">Usuario o contraseña incorrectos.</div>
+    <button class="btn-primary" onclick="doLogin()">Ingresar al Panel</button>
+    <hr class="login-divider">
+    <div class="candidate-link">
+      ¿Es candidato? <a href="#" onclick="showPage('page-candidate-entry')">Iniciar evaluación aquí</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: CANDIDATE ENTRY -->
+<!-- ============================================================ -->
+<div id="page-candidate-entry" class="page" style="display:none;">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--cream);padding:40px 20px;">
+    <div class="entry-box fadeIn">
+      <div class="icon">📋</div>
+      <h2>Evaluación 16PF</h2>
+      <p class="subtitle">Complete sus datos antes de iniciar el cuestionario. Sus respuestas son confidenciales y serán revisadas únicamente por el evaluador.</p>
+      <div class="info-box">
+        ℹ️ El cuestionario consta de <strong>187 preguntas</strong>. No hay respuestas correctas ni incorrectas. Responda con honestidad eligiendo la opción que mejor lo describa. Duración estimada: <strong>25–35 minutos</strong>.
+      </div>
+      <div class="form-group">
+        <label>Nombre completo *</label>
+        <input type="text" id="c-name" placeholder="Ingrese su nombre completo">
+      </div>
+      <div class="form-group">
+        <label>Puesto al que aplica *</label>
+        <input type="text" id="c-position" placeholder="Ej. Analista de Ventas">
+      </div>
+      <div class="form-group">
+        <label>Edad</label>
+        <input type="number" id="c-age" placeholder="25" min="16" max="99">
+      </div>
+      <div class="form-group">
+        <label>Escolaridad</label>
+        <select id="c-edu" style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.95rem;font-family:'Source Sans 3',sans-serif;outline:none;background:white;">
+          <option value="">Seleccionar...</option>
+          <option>Primaria</option>
+          <option>Secundaria</option>
+          <option>Preparatoria / Bachillerato</option>
+          <option>Técnico</option>
+          <option>Universidad (incompleta)</option>
+          <option>Licenciatura</option>
+          <option>Posgrado</option>
+        </select>
+      </div>
+      <div class="error-msg" id="entry-error" style="display:none;">Por favor complete los campos obligatorios (*).</div>
+      <button class="btn-primary mt-16" onclick="startTest()">Comenzar Evaluación →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: TEST -->
+<!-- ============================================================ -->
+<div id="page-test" class="page" style="display:none;">
+  <div class="progress-header">
+    <div class="progress-top">
+      <h3>Cuestionario 16PF</h3>
+      <span class="progress-count"><span id="prog-answered">0</span> de 187 respondidas</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="prog-bar" style="width:0%"></div>
+    </div>
+  </div>
+  <div class="section-header">
+    <h2 id="section-title">Sección 1</h2>
+    <p id="section-desc">Preguntas 1 – 20 de 187</p>
+  </div>
+  <div class="validation-msg" id="val-msg">⚠️ Por favor responda todas las preguntas de esta sección antes de continuar.</div>
+  <div id="questions-container"></div>
+  <div class="test-nav no-print">
+    <div class="nav-info">Sección <strong id="nav-section">1</strong> de 10</div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn-nav btn-back" id="btn-back" onclick="prevSection()">← Anterior</button>
+      <button class="btn-nav btn-next" id="btn-next" onclick="nextSection()">Siguiente →</button>
+      <button class="btn-nav btn-submit hidden" id="btn-submit" onclick="submitTest()">Enviar Prueba ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: THANK YOU (CANDIDATE) -->
+<!-- ============================================================ -->
+<div id="page-thankyou" class="page" style="display:none;">
+  <div class="thankyou-box fadeIn">
+    <div class="check">✅</div>
+    <h2>¡Gracias por participar!</h2>
+    <p>Ha completado exitosamente el cuestionario de personalidad 16PF.<br><br>Sus respuestas han sido registradas. El evaluador revisará sus resultados y se comunicará con usted a la brevedad.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: RESULTS (ADMIN ONLY) -->
+<!-- ============================================================ -->
+<div id="page-results" class="page" style="display:none;">
+  <div class="print-bar no-print">
+    <button class="btn-print btn-print-main" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+    <button class="btn-print btn-new-test" onclick="showPage('page-admin')">← Volver al Panel</button>
+  </div>
+  <div class="results-header">
+    <h1>Perfil de Personalidad 16PF</h1>
+    <p>Resultados de Evaluación Psicométrica</p>
+  </div>
+  <div class="candidate-info-box" id="res-candidate-info"></div>
+
+  <div class="results-section">
+    <h3>Factores Primarios — Perfil Gráfico</h3>
+    <div id="res-factors-chart"></div>
+  </div>
+
+  <div class="results-section">
+    <h3>Factores Globales</h3>
+    <div class="global-grid" id="res-global"></div>
+  </div>
+
+  <div class="results-section">
+    <h3>Interpretación de Resultados</h3>
+    <div id="res-interpretation"></div>
+  </div>
+
+  <div class="results-section">
+    <h3>Tabla de Puntuaciones Detalladas</h3>
+    <div id="res-scores-table"></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: ADMIN PANEL -->
+<!-- ============================================================ -->
+<div id="page-admin" class="page" style="display:none;">
+  <div class="admin-header">
+    <h2>Panel de Administración — 16PF</h2>
+    <div class="admin-actions">
+      <button class="btn-secondary" onclick="showPage('page-candidate-entry')">+ Nueva Evaluación</button>
+      <button class="btn-secondary btn-danger" onclick="clearAllResults()">🗑 Limpiar Registros</button>
+      <button class="btn-secondary" onclick="doLogout()">Cerrar Sesión</button>
+    </div>
+  </div>
+  <div class="stats-grid" id="admin-stats"></div>
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nombre</th>
+          <th>Puesto</th>
+          <th>Fecha</th>
+          <th>Edad</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="admin-tbody"></tbody>
+    </table>
+  </div>
+  <div style="text-align:center;padding:20px;color:var(--muted);font-size:0.88rem;" id="admin-empty" class="hidden">
+    No hay evaluaciones registradas aún.
+  </div>
+</div>
+
+<script>
+// ================================================================
+// DATA: 187 QUESTIONS
+// ================================================================
+const QUESTIONS = [
+  // 1–10
+  {n:1, text:"Entendí perfectamente las instrucciones de este cuestionario:", opts:["Sí","Indeciso","No"]},
+  {n:2, text:"Estoy dispuesto a contestar cada pregunta tan sinceramente como me sea posible:", opts:["Sí","Indeciso","No"]},
+  {n:3, text:"Preferiría tener una casa:", opts:["En un barrio sociable","Término medio","Solitaria en lo profundo de un bosque"]},
+  {n:4, text:"Puedo encontrar energía suficiente para enfrentarme a mis dificultades:", opts:["Siempre","Por lo general","Raras veces"]},
+  {n:5, text:"Los animales salvajes me ponen un poco nervioso, aun cuando se encuentren en jaulas resistentes:", opts:["Sí","Indeciso","No"]},
+  {n:6, text:"Evito criticar a la gente y a sus ideas:", opts:["Sí","A veces","No"]},
+  {n:7, text:"Hago observaciones agudas y sarcásticas a la gente que creo que se las merece:", opts:["Por lo general","Algunas veces","Nunca"]},
+  {n:8, text:"Prefiero la música semiclásica a las tonadas populares:", opts:["Cierto","Indeciso","Falso"]},
+  {n:9, text:"Si viera peleando a dos niños de mi vecino:", opts:["Dejaría que se arreglaran ellos mismos","Indeciso","Razonaría con ellos"]},
+  {n:10, text:"En los eventos sociales:", opts:["Destaco con facilidad","Indeciso","Prefiero permanecer a distancia"]},
+  // 11–20
+  {n:11, text:"Sería más interesante ser:", opts:["Un ingeniero constructor","Indeciso","Escritor de dramas"]},
+  {n:12, text:"Prefiero detenerme en la calle para observar a un artista pintando que ponerme a escuchar una pelea entre varias personas:", opts:["Sí","Indeciso","No"]},
+  {n:13, text:"Generalmente puedo tolerar a la gente vanidosa aun cuando se jacten o se muestren muy engreídas:", opts:["Sí","Término medio","No"]},
+  {n:14, text:"Cuando un hombre no es honrado por lo general se le nota en la cara:", opts:["Sí","Término medio","No"]},
+  {n:15, text:"Sería muy bueno que las vacaciones fueran más largas y que todos tuviesen que tomarlas:", opts:["De acuerdo","Indeciso","En desacuerdo"]},
+  {n:16, text:"Prefiero arriesgarme en un empleo donde las ganancias sean grandes aunque variables, y no en uno con salario fijo y pequeño:", opts:["Sí","Indeciso","No"]},
+  {n:17, text:"Hablo de mis sentimientos:", opts:["Solamente si es necesario","Término medio","Fácilmente, cada vez que tengo oportunidad"]},
+  {n:18, text:"En ocasiones tengo un vago sentimiento de peligro o un repentino temor, por razones que no entiendo:", opts:["Sí","Intermedio","No"]},
+  {n:19, text:"Cuando se me critica equivocadamente por algo que yo NO hice:", opts:["No me siento culpable","Término medio","Me siento, no obstante, un poco culpable"]},
+  {n:20, text:"El dinero puede comprar casi todo:", opts:["Sí","Indeciso","No"]},
+  // 21–30
+  {n:21, text:"Mis decisiones están guiadas principalmente por:", opts:["Mis sentimientos","Mis sentimientos y mi razón por igual","Mi razón"]},
+  {n:22, text:"La mayoría de la gente sería más feliz si viviera más ligada a sus semejantes e hiciera las mismas cosas que ellos:", opts:["Sí","Indeciso","No"]},
+  {n:23, text:"Cuando me miro en el espejo, algunas veces confundo cuál es mi derecha y cuál mi izquierda:", opts:["Cierto","Indeciso","Falso"]},
+  {n:24, text:"Cuando estoy conversando me gusta:", opts:["Decir las cosas tal y como se me ocurren","Término medio","Ordenar bien mis pensamientos primero"]},
+  {n:25, text:"Cuando algo me enfurece realmente me doy cuenta de que me calmo rápidamente:", opts:["Sí","Término medio","No"]},
+  {n:26, text:"Con las mismas horas de trabajo e idéntica paga preferiría la vida de:", opts:["Un carpintero o cocinero","Indeciso","Mesero en un buen restaurante"]},
+  {n:27, text:"He sido elegido para:", opts:["Sólo unos cuantos cargos","Varios","Muchos cargos"]},
+  {n:28, text:"'Pala' es a 'cavar' como 'cuchillo' es a:", opts:["Afilado","Cortar","Punta"]},
+  {n:29, text:"A veces no puedo dormir porque una idea se mantiene rondando en mi mente:", opts:["Cierto","Indeciso","Falso"]},
+  {n:30, text:"Casi siempre logro las metas que me propongo en mi vida personal:", opts:["Cierto","Indeciso","Falso"]},
+  // 31–40
+  {n:31, text:"Una ley anticuada debería cambiarse:", opts:["Solamente después de considerable discusión","Término medio","Rápidamente"]},
+  {n:32, text:"No estoy a gusto cuando trabajo en un proyecto que requiere acciones rápidas que afecten a otros:", opts:["Cierto","Término medio","Falso"]},
+  {n:33, text:"La mayoría de la gente que conozco me considera como un conversador divertido:", opts:["Sí","Indeciso","No"]},
+  {n:34, text:"Cuando veo a gente desaliñada y descuidada:", opts:["Simplemente la acepto","Término medio","Me disgusta y molesta"]},
+  {n:35, text:"Me avergüenzo un poco cuando de repente me convierto en el foco de atención de un grupo de gente:", opts:["Sí","Término medio","No"]},
+  {n:36, text:"Me da gusto siempre el unirme a grupos grandes, por ejemplo, a fiestas, bailes o reuniones públicas:", opts:["Sí","Término medio","No"]},
+  {n:37, text:"En la escuela preferí (o prefiero):", opts:["La música","Indeciso","La artesanía y los trabajos manuales"]},
+  {n:38, text:"Cuando se me encarga algo insisto en que se sigan mis instrucciones o de lo contrario renuncio:", opts:["Sí","Algunas veces","No"]},
+  {n:39, text:"Para los padres es más importante:", opts:["Ayudar a sus hijos a desarrollar sus afectos","Término medio","Enseñar a sus hijos cómo controlar sus emociones"]},
+  {n:40, text:"En una tarea de grupo preferiría:", opts:["Intentar mejorar los arreglos","Término medio","Llevar los registros y ver que se cumplan las reglas"]},
+  // 41–50
+  {n:41, text:"De vez en cuando siento la necesidad de emprender actividades físicas rudas:", opts:["Sí","Término medio","No"]},
+  {n:42, text:"Preferiría reunirme con gente bien educada que con personas rudas y rebeldes:", opts:["Sí","Término medio","No"]},
+  {n:43, text:"Me siento terriblemente desanimado cuando me critican en un grupo:", opts:["Cierto","Término medio","Falso"]},
+  {n:44, text:"Cuando mi jefe me llama, yo:", opts:["Aprovecho la ocasión para pedir algo que quiero","Indeciso","Temo haber hecho algo mal"]},
+  {n:45, text:"Lo que este mundo necesita es:", opts:["Más ciudadanos 'sólidos' y estables","Indeciso","Más 'idealistas' con planes para un mundo mejor"]},
+  {n:46, text:"Estoy siempre atento a los intentos propagandísticos en las cosas que leo:", opts:["Sí","Indeciso","No"]},
+  {n:47, text:"De adolescente participé en los deportes escolares:", opts:["Ocasionalmente","Regularmente","Bastante a menudo"]},
+  {n:48, text:"Casi siempre mi cuarto está bien arreglado con cada cosa en su lugar:", opts:["Sí","Término medio","No"]},
+  {n:49, text:"A veces me entra un estado de tensión y confusión cuando pienso en los sucesos del día:", opts:["Sí","Intermedio","No"]},
+  {n:50, text:"A veces dudo que la gente con la que estoy conversando esté realmente interesada en lo que digo:", opts:["Sí","Término medio","No"]},
+  // 51–60
+  {n:51, text:"Si tuviera que escoger, preferiría ser:", opts:["Un guardabosque","Indeciso","Maestro de secundaria"]},
+  {n:52, text:"En días festivos y cumpleaños:", opts:["Me gusta dar regalos personales","Indeciso","Siento que comprar regalos es un poco molesto"]},
+  {n:53, text:"'Cansado' es a 'trabajo' como 'orgulloso' es a:", opts:["Sonrisa","Éxito","Feliz"]},
+  {n:54, text:"¿Cuál de estos tres objetos es de naturaleza diferente a los otros dos?", opts:["Vela","Luna","Luz eléctrica"]},
+  {n:55, text:"Mis amigos me han fallado:", opts:["Casi nunca","Ocasionalmente","Con frecuencia"]},
+  {n:56, text:"En ciertas características que tengo me siento definitivamente superior a la mayoría de la gente:", opts:["Sí","Indeciso","No"]},
+  {n:57, text:"Cuando estoy molesto, trato con empeño de ocultar mis sentimientos a otros:", opts:["Verdad","Término medio","Falso"]},
+  {n:58, text:"Me gusta asistir a espectáculos o diversiones:", opts:["Más de una vez por semana","Una vez a la semana","Menos de una vez por semana"]},
+  {n:59, text:"Pienso que una amplia libertad es más importante que los buenos modales y el respeto a la ley:", opts:["Cierto","Indeciso","Falso"]},
+  {n:60, text:"Tengo la tendencia a quedarme callado en la presencia de personas mayores (de más edad, experiencia, jerarquía o puesto).", opts:["Sí","Término medio","No"]},
+  // 61–70
+  {n:61, text:"Se me hace difícil dirigirme o recitar ante un grupo grande:", opts:["Sí","Término medio","No"]},
+  {n:62, text:"Tengo un buen sentido de orientación cuando estoy en un lugar desconocido (descubro con facilidad dónde está el norte, sur, etc.):", opts:["Sí","Término medio","No"]},
+  {n:63, text:"Si alguien se enojara conmigo:", opts:["Trataría de calmarlo","Indeciso","Me irritaría"]},
+  {n:64, text:"Cuando leo algún artículo tendencioso o injusto en una revista, tiendo más bien a olvidarlo que a sentir ganas de devolverles el golpe:", opts:["Cierto","Indeciso","Falso"]},
+  {n:65, text:"Tiendo a olvidar cosas triviales y sin importancia, tales como nombres de calles, tiendas, etc.:", opts:["Cierto","Término medio","Falso"]},
+  {n:66, text:"Me gustaría la vida de un veterinario ocupado en las enfermedades y cirugía de los animales:", opts:["Sí","Término medio","No"]},
+  {n:67, text:"Yo tomo mis alimentos con deleite, aunque no siempre tan cuidadosa y apropiadamente como alguna gente:", opts:["Cierto","Indeciso","Falso"]},
+  {n:68, text:"Hay veces que no tengo la debida disposición de ánimo para ver a nadie:", opts:["Muy raramente","Intermedio","Con frecuencia"]},
+  {n:69, text:"A veces la gente me advierte que demuestro mi excitación con voces y ademanes demasiado evidentes:", opts:["Sí","Intermedio","No"]},
+  {n:70, text:"De adolescente, si mi opinión era distinta a las de mis padres, por lo general:", opts:["Conservaba mi propia opinión","Intermedio","Aceptaba la autoridad de mis padres"]},
+  // 71–80
+  {n:71, text:"Preferiría tener una oficina propia, sin compartirla con otra persona:", opts:["Sí","Indeciso","No"]},
+  {n:72, text:"Preferiría gozar de una vida calmada, a mi manera, que ser admirado por mis éxitos:", opts:["Cierto","Indeciso","Falso"]},
+  {n:73, text:"Me siento maduro en la mayoría de las cosas:", opts:["Verdad","Indeciso","Falso"]},
+  {n:74, text:"El tipo de crítica que mucha gente me hace me molesta en vez de ayudarme:", opts:["Con frecuencia","Ocasionalmente","Nunca"]},
+  {n:75, text:"Siempre soy capaz de controlar la expresión de mis sentimientos bajo mi estricto control:", opts:["Sí","Término medio","No"]},
+  {n:76, text:"Al inventar algo útil, preferiría:", opts:["Perfeccionarlo en el laboratorio","Indeciso","Vendérselo a la gente"]},
+  {n:77, text:"'Sorpresa' es a 'extraño' como 'miedo' es a:", opts:["Valiente","Término medio","Terrible"]},
+  {n:78, text:"¿Cuál de estas fracciones es distinta de las otras dos?", opts:["3/7","3/9","3/11"]},
+  {n:79, text:"No sé por qué, pero me parece que algunas personas me ignoran o me evitan:", opts:["Cierto","Término medio","Falso"]},
+  {n:80, text:"La gente me trata menos razonablemente de lo que merecen mis buenas intenciones:", opts:["A menudo","Ocasionalmente","Nunca"]},
+  // 81–90
+  {n:81, text:"Me molesta el uso de lenguaje obsceno aún en el caso de grupos en los que no haya mujeres:", opts:["Sí","Término medio","No"]},
+  {n:82, text:"Sin lugar a dudas, tengo menos amigos que la mayoría de la gente:", opts:["Sí","Término medio","No"]},
+  {n:83, text:"Me disgustaría estar en un sitio donde no hubiera gente con quien conversar:", opts:["Cierto","Indeciso","Falso"]},
+  {n:84, text:"A veces la gente me llama descuidado, a pesar de que piensan que soy una persona agradable:", opts:["Sí","Indeciso","No"]},
+  {n:85, text:"El 'miedo escénico' en una variedad de situaciones sociales es algo que he experimentado:", opts:["Con frecuencia","A veces","Casi nunca"]},
+  {n:86, text:"Cuando estoy en un grupo pequeño, me contento con estar sentado y dejar que los otros realicen la mayor parte de la conversación:", opts:["Sí","Término medio","No"]},
+  {n:87, text:"Prefiero leer:", opts:["Una narración realista de batallas militares o políticas","Indeciso","Una novela sentimental e imaginativa"]},
+  {n:88, text:"Cuando la gente mandona trata de manejarme yo hago exactamente lo contrario de lo que ellas quieren:", opts:["Sí","Término medio","No"]},
+  {n:89, text:"Por lo general, mis jefes en el trabajo o los miembros de mi familia me critican sólo cuando hay una causa real.", opts:["Cierto","Término medio","Falso"]},
+  {n:90, text:"En la calle o en las tiendas, no me gusta la manera en que algunas personas miran con fijeza a la gente:", opts:["Cierto","Término medio","Falso"]},
+  // 91–100
+  {n:91, text:"Durante un viaje largo, preferiría:", opts:["Leer algo profundo pero interesante","Indeciso","Pasar el tiempo charlando informalmente con un compañero de viaje"]},
+  {n:92, text:"En una situación que puede volverse peligrosa creo que hay que hacer ruido y gritar, aunque se pierdan la calma y la cortesía.", opts:["Sí","Término medio","No"]},
+  {n:93, text:"Si mis conocidos me hacen ver que les caigo mal y me tratan mal:", opts:["Me importa poco","Término medio","Tiendo a ponerme triste"]},
+  {n:94, text:"Me perturba que me alaben o me digan cumplidos:", opts:["Sí","Término medio","No"]},
+  {n:95, text:"Preferiría un trabajo con:", opts:["Un sueldo fijo y seguro","Término medio","Un sueldo elevado que dependiera de mi capacidad persuasiva"]},
+  {n:96, text:"Para mantenerme informado, me gusta:", opts:["Discutir los problemas con la gente","Término medio","Confiar en los informes periodísticos actuales"]},
+  {n:97, text:"Me gusta tomar parte activa en asuntos sociales, comités, etc.:", opts:["Sí","Término medio","No"]},
+  {n:98, text:"Al cumplir una tarea no me quedo satisfecho a menos que aún los menores detalles reciban atención minuciosa:", opts:["Cierto","Término medio","Falso"]},
+  {n:99, text:"A veces me irritan demasiado las pequeñas contrariedades:", opts:["Sí","Término medio","No"]},
+  {n:100, text:"Yo siempre duermo profundamente, sin andar o hablar mientras lo hago:", opts:["Sí","Intermedio","No"]},
+  // 101–110
+  {n:101, text:"Sería más interesante trabajar en una empresa:", opts:["Hablando a los clientes","Término medio","Llevando las cuentas y registros de la oficina"]},
+  {n:102, text:"'Tamaño' es a 'longitud' como 'deshonesto' es a:", opts:["Prisión","Pecado","Robo"]},
+  {n:103, text:"AB es a dc como SR es a:", opts:["qp","pq","tu"]},
+  {n:104, text:"Cuando la gente no es razonable:", opts:["Me quedo tranquilo","Indeciso","Los desprecio"]},
+  {n:105, text:"Si alguien habla en voz alta cuando estoy escuchando música:", opts:["Me puedo concentrar en la música y no me molesta","Intermedio","Considero que me echan a perder mi entretenimiento y me molesto"]},
+  {n:106, text:"Creo que se me describe mejor como:", opts:["Cortés y tranquilo","Término medio","Enérgico"]},
+  {n:107, text:"Asisto a eventos sociales sólo cuando tengo que hacerlo, pero el resto del tiempo me alejo de ellos:", opts:["Sí","Indeciso","No"]},
+  {n:108, text:"Ser precavido y esperar poco es mejor que ser optimista y esperar siempre el éxito:", opts:["Cierto","Indeciso","Falso"]},
+  {n:109, text:"Cuando pienso en las dificultades de mi trabajo:", opts:["Trato de planear con anticipación antes de afrontarlas","Término medio","Supongo que podré manejarlas cuando se presenten"]},
+  {n:110, text:"Encuentro fácil mezclarme con la gente en una reunión social:", opts:["Cierto","Indeciso","Falso"]},
+  // 111–120
+  {n:111, text:"Generalmente se me solicita que intervenga cuando se necesita un poco de diplomacia y persuasión para activar a la gente.", opts:["Sí","Intermedio","No"]},
+  {n:112, text:"Sería más interesante ser:", opts:["Un orientador vocacional que ayuda a los jóvenes a encontrar empleo","Indeciso","Gerente, en el aspecto técnico, de una fábrica"]},
+  {n:113, text:"Si estoy completamente seguro de que una persona es injusta o se porta de un modo egoísta, se lo digo, aunque me traiga problemas.", opts:["Sí","Intermedio","No"]},
+  {n:114, text:"Algunas veces hago observaciones tontas en broma, nada más para sorprender a la gente y ver qué dicen.", opts:["Sí","Intermedio","No"]},
+  {n:115, text:"Me gustaría ser reportero de noticias de teatro, ópera, conciertos, etc:", opts:["Sí","Indeciso","No"]},
+  {n:116, text:"Nunca siento necesidad de escribir garabatos ni estarme moviendo mientras estoy sentado en una reunión:", opts:["Cierto","Indeciso","Falso"]},
+  {n:117, text:"Si alguien me dice algo que yo sé que no es correcto, tiendo a decirme a mí mismo:", opts:["Es un mentiroso","Intermedio","Aparentemente está mal informado"]},
+  {n:118, text:"Siento que voy a tener algún castigo, aún cuando no he hecho nada malo:", opts:["Con frecuencia","Ocasionalmente","Nunca"]},
+  {n:119, text:"La idea de que las enfermedades provienen tanto de causas mentales como físicas es muy exagerada:", opts:["Sí","Intermedio","No"]},
+  {n:120, text:"La pompa y el esplendor de cualquier gran ceremonia estatal son cosas que deben preservarse:", opts:["Sí","Intermedio","No"]},
+  // 121–130
+  {n:121, text:"Me molesta si la gente piensa que soy demasiado diferente o muy poco convencional:", opts:["Mucho","Algo","Nada"]},
+  {n:122, text:"En la construcción de algo, preferiría trabajar:", opts:["En un comité","Indeciso","Por mi propia cuenta"]},
+  {n:123, text:"Tengo ratos en los que me es difícil evitar un sentimiento de autocompasión:", opts:["A menudo","Ocasionalmente","Nunca"]},
+  {n:124, text:"A menudo me disgusto demasiado rápido con la gente:", opts:["Sí","Intermedio","No"]},
+  {n:125, text:"Siempre puedo cambiar hábitos antiguos sin dificultad y sin volver a caer en ellos:", opts:["Sí","Intermedio","No"]},
+  {n:126, text:"Si el sueldo fuera igual, preferiría ser:", opts:["Abogado","Indeciso","Navegante o piloto"]},
+  {n:127, text:"'Mejor' es a 'peor' como 'más lento' es a:", opts:["Rápido","Óptimo","Más veloz"]},
+  {n:128, text:"¿Cuál es la que debe ir al final de esta lista: xooooxxoooxxx?", opts:["oxxx","ooxx","xooo"]},
+  {n:129, text:"Cuando llega la hora de algo que yo había planeado y anticipado, a veces no siento ganas de ir:", opts:["Cierto","Intermedio","Falso"]},
+  {n:130, text:"Puedo trabajar con cuidado en la mayor parte de las cosas sin que me perturbe el ruido que la gente hace a mi alrededor:", opts:["Sí","Intermedio","No"]},
+  // 131–140
+  {n:131, text:"Ocasionalmente hablo a extraños de cosas que me parecen importantes, aun cuando ellos no me hayan preguntado:", opts:["Sí","Indeciso","No"]},
+  {n:132, text:"Paso mucho de mi tiempo libre hablando con amigos de los eventos sociales que nos divirtieron en el pasado:", opts:["Sí","Intermedio","No"]},
+  {n:133, text:"Me agrada hacer cosas temerarias y atrevidas nada más por diversión:", opts:["Sí","Término medio","No"]},
+  {n:134, text:"Me molesta mucho ver un cuarto desarreglado:", opts:["Sí","Intermedio","No"]},
+  {n:135, text:"Me considero una persona muy sociable con la que es fácil llevarse:", opts:["Sí","Intermedio","No"]},
+  {n:136, text:"En mis relaciones sociales:", opts:["Muestro mis emociones como quiero","Intermedio","Me las guardo"]},
+  {n:137, text:"Me gusta la música:", opts:["Aguda, ligera y viva","Intermedio","Emotiva y sentimental"]},
+  {n:138, text:"Admiro más la belleza de un poema que la belleza de un revólver bien hecho:", opts:["Sí","Indeciso","No"]},
+  {n:139, text:"Si se pasa por alto una buena observación mía:", opts:["No hago nada","Intermedio","Le doy a la gente otra oportunidad de escucharla"]},
+  {n:140, text:"Me gustaría trabajar como vigilante de criminales liberados bajo palabra:", opts:["Sí","Intermedio","No"]},
+  // 141–150
+  {n:141, text:"Se debe tener cuidado al mezclarse con todo tipo de extraños, porque hay peligro de infección:", opts:["Sí","Indeciso","No"]},
+  {n:142, text:"Al viajar al extranjero yo preferiría ir en una excursión bien organizada que planear yo mismo los lugares que me gustaría visitar:", opts:["Sí","Indeciso","No"]},
+  {n:143, text:"Se me considera, acertadamente, sólo como una persona trabajadora y de mediano éxito:", opts:["Sí","Indeciso","No"]},
+  {n:144, text:"Si la gente abusa de mi amistad, no me resiento y lo olvido pronto:", opts:["Cierto","Indeciso","Falso"]},
+  {n:145, text:"Si surgiera una discusión acalorada en una discusión de grupo entre otros de los participantes, a mí:", opts:["Me gustaría ver un 'ganador'","Intermedio","Quisiera que la discusión se allanara"]},
+  {n:146, text:"Me gusta hacer mis planes solo, sin interrupciones ni sugerencias de otros:", opts:["Sí","Intermedio","No"]},
+  {n:147, text:"A veces dejo que mis acciones se vean influenciadas por mis celos:", opts:["Sí","Intermedio","No"]},
+  {n:148, text:"Estoy convencido de que 'puede que el patrón no siempre tenga la razón, pero siempre tiene el derecho de ser patrón':", opts:["Sí","Intermedio","No"]},
+  {n:149, text:"Me pongo en tensión cuando pienso en todas las cosas que me van a venir:", opts:["Sí","A veces","No"]},
+  {n:150, text:"No me molesta que la gente me grite lo que tengo que hacer cuando estoy jugando:", opts:["Cierto","Indeciso","Falso"]},
+  // 151–160
+  {n:151, text:"Sería más interesante ser:", opts:["Un artista","Indeciso","Un secretario encargado de un club social"]},
+  {n:152, text:"¿Cuál de las siguientes palabras no es de la misma clase que las otras dos?", opts:["Cualquiera","Algo","Más"]},
+  {n:153, text:"'Llama' es a 'calor' como 'rosa' es a:", opts:["Espina","Pétalos rojos","Perfume"]},
+  {n:154, text:"Tengo sueños tan reales que turban mi dormir:", opts:["A menudo","Ocasionalmente","Prácticamente nunca"]},
+  {n:155, text:"Aunque las probabilidades de que algo tenga éxito sean prácticamente nulas mantengo que hay que correr el riesgo:", opts:["Sí","Indeciso","No"]},
+  {n:156, text:"Me agrada la situación en la que sé tan bien lo que el grupo tiene que hacer, que naturalmente me pongo al mando:", opts:["Sí","Término medio","No"]},
+  {n:157, text:"Preferiría vestirme sencilla y correctamente, y no con un estilo personal y llamativo:", opts:["Cierto","Indeciso","Falso"]},
+  {n:158, text:"Me llama más la atención pasar una tarde con un pasatiempo tranquilo que en una fiesta animada:", opts:["Cierto","Indeciso","Falso"]},
+  {n:159, text:"Me resisto a los consejos bien intencionados de otras personas, aunque sé que no debería hacerlo:", opts:["Ocasionalmente","Casi nunca","Nunca"]},
+  {n:160, text:"Al decidir cualquier cosa, siempre hago hincapié en las reglas básicas de lo bueno y lo malo:", opts:["Sí","Término medio","No"]},
+  // 161–170
+  {n:161, text:"Me disgusta un poco que un grupo me observe cuando estoy trabajando:", opts:["Sí","Término medio","No"]},
+  {n:162, text:"Debido a que no siempre es posible que las cosas se hagan por métodos graduales y razonables, a veces es necesario usar la fuerza:", opts:["Cierto","Intermedio","Falso"]},
+  {n:163, text:"En la escuela prefería (o prefiero):", opts:["Lengua y literatura","Quién sabe","Aritmética y matemáticas"]},
+  {n:164, text:"A veces me ha molestado que la gente hable mal de mí a mis espaldas, sin tener razón:", opts:["Sí","Indeciso","No"]},
+  {n:165, text:"Hablar con la gente convencional, común y corriente:", opts:["Es a menudo interesante e importante","Término medio","Me molesta, porque dicen tonterías y cosas superficiales"]},
+  {n:166, text:"Algunas cosas me dan tanto disgusto que encuentro mejor callarme:", opts:["Sí","Intermedio","No"]},
+  {n:167, text:"En la educación es más importante:", opts:["Darle al niño suficiente cariño","Término medio","Hacer que el niño aprenda costumbres y actitudes deseables"]},
+  {n:168, text:"La gente me considera una persona estable, imperturbable, e inconmovible ante las altas y las bajas de la vida:", opts:["Sí","Término medio","No"]},
+  {n:169, text:"Pienso que la sociedad debería dejar que la razón la encaminara hacia nuevas costumbres y hacer a un lado los viejos hábitos o meras tradiciones:", opts:["Sí","Término medio","No"]},
+  {n:170, text:"Me parece que es más importante para el mundo actual resolver:", opts:["El problema moral","Indeciso","Las dificultades políticas"]},
+  // 171–180
+  {n:171, text:"Yo aprendo mejor:", opts:["Leyendo un libro bien escrito","Término medio","Interviniendo en la discusión de un grupo"]},
+  {n:172, text:"Me gusta hacer las cosas a mi modo en vez de obrar de acuerdo con las reglas aprobadas:", opts:["Cierto","Indeciso","Falso"]},
+  {n:173, text:"Me gusta esperar hasta estar seguro de que lo que estoy diciendo es correcto antes de presentar mis opiniones:", opts:["Siempre","Por lo general","Sólo si es conveniente"]},
+  {n:174, text:"A veces ciertas pequeñeces me ponen los nervios de punta, aunque me doy cuenta de que no tienen ninguna importancia:", opts:["Sí","Término medio","No"]},
+  {n:175, text:"No es frecuente que por la exaltación del momento diga cosas de las que más tarde tenga que arrepentirme:", opts:["Cierto","Indeciso","Falso"]},
+  {n:176, text:"Si me pidieran que trabajara en una obra de caridad:", opts:["Aceptaría","Indeciso","Respondería cortésmente que estoy ocupado"]},
+  {n:177, text:"¿Cuál de las siguientes palabras no es de la misma clase que las otras?", opts:["Ancho","Zig zag","Recto"]},
+  {n:178, text:"'Pronto' es a 'nunca' como 'cerca' es a:", opts:["En ninguna parte","Lejos","Aparte"]},
+  {n:179, text:"Si cometo una grave falta de educación puedo olvidarla pronto:", opts:["Sí","Término medio","No"]},
+  {n:180, text:"Me conocen como un 'hombre de ideas', porque siempre propongo algunas cuando hay un problema:", opts:["Sí","Término medio","No"]},
+  // 181–187
+  {n:181, text:"Pienso que puedo demostrar mejor:", opts:["Valor ante los desafíos","Indeciso","Mi tolerancia para con los deseos de los demás"]},
+  {n:182, text:"Me consideran una persona muy entusiasta:", opts:["Sí","Término medio","No"]},
+  {n:183, text:"Me gusta un trabajo que tenga novedades, cambios y viajes aunque presente ciertos peligros:", opts:["Sí","Término medio","No"]},
+  {n:184, text:"Soy una persona bastante estricta que insiste siempre en hacer las cosas tan correctamente como sea posible:", opts:["Cierto","Término medio","Falso"]},
+  {n:185, text:"Me gustan los trabajos que requieren destreza y meticulosidad:", opts:["Sí","Término medio","No"]},
+  {n:186, text:"Soy el tipo de persona dinámica, que se mantiene en constante actividad:", opts:["Sí","Indeciso","No"]},
+  {n:187, text:"Estoy seguro de que no he omitido ni he dejado de contestar adecuadamente ninguna pregunta:", opts:["Sí","Indeciso","No"]}
+];
+
+// ================================================================
+// SCORING KEY — 16 Primary Factors
+// Each entry: { factor, questionNum, scoringMap: {A:pts, B:pts, C:pts} }
+// Based on standard 16PF scoring (simplified decatypes)
+// ================================================================
+const FACTORS = [
+  { id:'A', name:'Afabilidad', low:'Reservado / Crítico', high:'Cálido / Afectuoso',
+    desc:'Mide la calidez interpersonal y la capacidad para relacionarse con los demás de manera empática y afectuosa.'},
+  { id:'B', name:'Razonamiento', low:'Pensamiento Concreto', high:'Pensamiento Abstracto',
+    desc:'Evalúa la capacidad de razonamiento y pensamiento abstracto. Puntajes altos indican mayor facilidad para resolver problemas complejos.'},
+  { id:'C', name:'Estabilidad Emocional', low:'Inestabilidad Emocional', high:'Estabilidad Emocional',
+    desc:'Refleja la madurez emocional y la capacidad para manejar el estrés y las frustraciones del día a día sin perder el equilibrio.'},
+  { id:'E', name:'Dominancia', low:'Sumiso / Deferente', high:'Dominante / Asertivo',
+    desc:'Indica el nivel de asertividad, confianza y disposición a tomar el mando en situaciones sociales y laborales.'},
+  { id:'F', name:'Animación', low:'Prudente / Serio', high:'Animado / Espontáneo',
+    desc:'Mide el nivel de entusiasmo, espontaneidad y vitalidad en las interacciones cotidianas.'},
+  { id:'G', name:'Atención a Normas', low:'Despreocupado', high:'Escrupuloso / Normativo',
+    desc:'Evalúa la adherencia a las reglas, el sentido del deber y la conciencia moral.'},
+  { id:'H', name:'Atrevimiento', low:'Tímido / Sensible', high:'Atrevido / Sociable',
+    desc:'Refleja la audacia social, la disposición a asumir riesgos sociales y la facilidad para relacionarse en grupos.'},
+  { id:'I', name:'Sensibilidad', low:'Racional / Práctico', high:'Sensible / Estético',
+    desc:'Mide la sensibilidad emocional, estética y la tendencia a dejarse llevar por los sentimientos.'},
+  { id:'L', name:'Vigilancia', low:'Confiado / Adaptable', high:'Vigilante / Desconfiado',
+    desc:'Indica el nivel de desconfianza, suspicacia y tendencia a cuestionar las intenciones de los demás.'},
+  { id:'M', name:'Abstracción', low:'Práctico / Concreto', high:'Abstracto / Imaginativo',
+    desc:'Evalúa la tendencia a perderse en el mundo de las ideas, la imaginación y la creatividad versus el pensamiento práctico.'},
+  { id:'N', name:'Privacidad', low:'Abierto / Genuino', high:'Reservado / Privado',
+    desc:'Mide la tendencia a ser discreto, calculado en las revelaciones personales y a mantener una imagen social cuidada.'},
+  { id:'O', name:'Aprensión', low:'Seguro / Confiado', high:'Aprensivo / Preocupado',
+    desc:'Refleja la tendencia a la culpabilidad, la inseguridad, la preocupación y la sensación de inadecuación.'},
+  { id:'Q1', name:'Apertura al Cambio', low:'Tradicionalista', high:'Radical / Abierto',
+    desc:'Indica la receptividad a nuevas ideas, el pensamiento crítico y la disposición al cambio versus la preferencia por lo establecido.'},
+  { id:'Q2', name:'Autosuficiencia', low:'Dependiente del Grupo', high:'Autosuficiente',
+    desc:'Mide la preferencia por tomar decisiones de manera independiente versus buscar el apoyo y consenso del grupo.'},
+  { id:'Q3', name:'Perfeccionismo', low:'Desinhibido / Flexible', high:'Perfeccionista / Organizado',
+    desc:'Evalúa el autocontrol, la organización, la disciplina y la tendencia al perfeccionismo en las actividades.'},
+  { id:'Q4', name:'Tensión', low:'Tranquilo / Relajado', high:'Tenso / Impaciente',
+    desc:'Refleja el nivel de tensión, frustración, impaciencia y energía ansiosa que experimenta la persona.'}
+];
+
+// Simplified scoring: questions mapped to factors
+// A=1, B=2, C=3 for raw scoring — then convert to decatipo 1-10
+const SCORING_KEY = {
+  A:  [{q:3,a:1},{q:9,a:3},{q:33,a:1},{q:52,a:1},{q:83,a:1},{q:96,a:1},{q:110,a:1},{q:132,a:1},{q:140,a:1},{q:176,a:1}],
+  B:  [{q:28,a:2},{q:53,a:2},{q:54,a:2},{q:77,a:3},{q:78,a:2},{q:102,a:3},{q:103,a:1},{q:127,a:3},{q:128,a:2},{q:152,a:3},{q:153,a:3},{q:177,a:2},{q:178,a:1}],
+  C:  [{q:4,a:1},{q:18,a:3},{q:25,a:1},{q:30,a:1},{q:43,a:3},{q:49,a:3},{q:68,a:1},{q:74,a:3},{q:93,a:1},{q:100,a:1},{q:123,a:3},{q:129,a:3},{q:154,a:3}],
+  E:  [{q:7,a:1},{q:22,a:3},{q:27,a:3},{q:38,a:1},{q:44,a:1},{q:56,a:1},{q:60,a:3},{q:70,a:1},{q:88,a:1},{q:113,a:1},{q:145,a:1},{q:156,a:1},{q:181,a:1}],
+  F:  [{q:15,a:1},{q:16,a:1},{q:24,a:1},{q:36,a:1},{q:47,a:3},{q:58,a:1},{q:69,a:1},{q:84,a:1},{q:101,a:1},{q:114,a:1},{q:131,a:1},{q:133,a:1},{q:182,a:1}],
+  G:  [{q:6,a:1},{q:34,a:3},{q:40,a:3},{q:48,a:1},{q:64,a:1},{q:81,a:1},{q:90,a:1},{q:98,a:1},{q:116,a:1},{q:120,a:1},{q:142,a:1},{q:160,a:1},{q:185,a:1}],
+  H:  [{q:10,a:1},{q:35,a:3},{q:61,a:3},{q:82,a:3},{q:85,a:3},{q:86,a:3},{q:94,a:3},{q:107,a:3},{q:111,a:1},{q:130,a:1},{q:135,a:1},{q:161,a:3},{q:186,a:1}],
+  I:  [{q:8,a:1},{q:11,a:3},{q:12,a:1},{q:37,a:1},{q:63,a:1},{q:87,a:3},{q:115,a:1},{q:119,a:3},{q:126,a:3},{q:138,a:1},{q:139,a:3},{q:163,a:1},{q:170,a:1}],
+  L:  [{q:14,a:1},{q:50,a:1},{q:55,a:3},{q:64,a:3},{q:79,a:1},{q:80,a:1},{q:89,a:3},{q:117,a:1},{q:141,a:1},{q:144,a:3},{q:147,a:1},{q:164,a:1},{q:166,a:1}],
+  M:  [{q:20,a:1},{q:23,a:1},{q:45,a:3},{q:59,a:1},{q:65,a:1},{q:67,a:1},{q:109,a:3},{q:122,a:3},{q:146,a:1},{q:155,a:1},{q:162,a:1},{q:169,a:1},{q:172,a:1}],
+  N:  [{q:17,a:1},{q:24,a:3},{q:51,a:3},{q:57,a:1},{q:72,a:1},{q:75,a:1},{q:76,a:3},{q:91,a:1},{q:106,a:1},{q:126,a:1},{q:136,a:3},{q:157,a:1},{q:173,a:1}],
+  O:  [{q:5,a:1},{q:19,a:3},{q:29,a:1},{q:43,a:1},{q:44,a:3},{q:50,a:1},{q:93,a:3},{q:118,a:1},{q:123,a:1},{q:143,a:1},{q:147,a:1},{q:149,a:1},{q:166,a:1}],
+  Q1: [{q:13,a:3},{q:31,a:3},{q:39,a:1},{q:45,a:3},{q:59,a:1},{q:119,a:3},{q:121,a:3},{q:125,a:1},{q:142,a:3},{q:148,a:3},{q:162,a:1},{q:169,a:1},{q:172,a:1}],
+  Q2: [{q:21,a:3},{q:46,a:1},{q:51,a:1},{q:71,a:1},{q:91,a:1},{q:95,a:1},{q:104,a:1},{q:122,a:3},{q:146,a:1},{q:158,a:1},{q:171,a:1},{q:174,a:3},{q:183,a:3}],
+  Q3: [{q:26,a:3},{q:32,a:3},{q:40,a:3},{q:48,a:1},{q:62,a:1},{q:75,a:1},{q:98,a:1},{q:116,a:1},{q:125,a:1},{q:134,a:1},{q:184,a:1},{q:185,a:1},{q:187,a:1}],
+  Q4: [{q:29,a:1},{q:41,a:1},{q:49,a:1},{q:74,a:1},{q:99,a:1},{q:105,a:3},{q:124,a:1},{q:129,a:1},{q:149,a:1},{q:154,a:1},{q:174,a:1},{q:179,a:3},{q:186,a:1}]
+};
+
+// ================================================================
+// APP STATE
+// ================================================================
+let currentSection = 0;
+let answers = {}; // {questionNum: 'A'|'B'|'C'}
+let candidateInfo = {};
+let isAdmin = false;
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'Admin2024';
+const SECTIONS_PER_PAGE = 20; // questions per section
+const TOTAL_SECTIONS = Math.ceil(187 / SECTIONS_PER_PAGE);
+
+// ================================================================
+// NAVIGATION
+// ================================================================
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => { p.style.display = 'none'; p.classList.remove('active'); });
+  const el = document.getElementById(id);
+  el.style.display = (id === 'page-login' || id === 'page-candidate-entry' || id === 'page-thankyou') ? 'flex' : 'block';
+  el.classList.add('active');
+  // Update header
+  const badge = document.getElementById('header-mode');
+  const header = document.getElementById('main-header');
+  if (id === 'page-admin' || id === 'page-results') {
+    badge.textContent = 'Administrador';
+    header.style.display = 'flex';
+  } else if (id === 'page-test') {
+    badge.textContent = 'Evaluación en Curso';
+    header.style.display = 'flex';
+  } else if (id === 'page-thankyou') {
+    header.style.display = 'none';
+  } else {
+    badge.textContent = 'Acceso';
+    header.style.display = 'flex';
+  }
+  window.scrollTo(0,0);
+}
+
+// ================================================================
+// AUTH
+// ================================================================
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  if (u === ADMIN_USER && p === ADMIN_PASS) {
+    isAdmin = true;
+    loadAdminPanel();
+    showPage('page-admin');
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function doLogout() {
+  isAdmin = false;
+  showPage('page-login');
+}
+
+// ================================================================
+// CANDIDATE START
+// ================================================================
+function startTest() {
+  const name = document.getElementById('c-name').value.trim();
+  const pos  = document.getElementById('c-position').value.trim();
+  if (!name || !pos) {
+    document.getElementById('entry-error').style.display = 'block';
+    return;
+  }
+  candidateInfo = {
+    name, position: pos,
+    age: document.getElementById('c-age').value || '—',
+    edu: document.getElementById('c-edu').value || '—',
+    date: new Date().toLocaleDateString('es-ES', {year:'numeric',month:'long',day:'numeric'}),
+    time: new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'})
+  };
+  answers = {};
+  currentSection = 0;
+  renderSection(0);
+  showPage('page-test');
+}
+
+// ================================================================
+// TEST RENDERING
+// ================================================================
+function getQuestionsForSection(sec) {
+  const start = sec * SECTIONS_PER_PAGE;
+  const end = Math.min(start + SECTIONS_PER_PAGE, 187);
+  return QUESTIONS.slice(start, end);
+}
+
+function renderSection(sec) {
+  const qs = getQuestionsForSection(sec);
+  const totalSecs = TOTAL_SECTIONS;
+  const startQ = sec * SECTIONS_PER_PAGE + 1;
+  const endQ = Math.min((sec+1) * SECTIONS_PER_PAGE, 187);
+
+  document.getElementById('section-title').textContent = `Sección ${sec+1} de ${totalSecs}`;
+  document.getElementById('section-desc').textContent = `Preguntas ${startQ} – ${endQ} de 187`;
+  document.getElementById('nav-section').textContent = sec+1;
+  document.getElementById('val-msg').style.display = 'none';
+
+  // Nav buttons
+  document.getElementById('btn-back').classList.toggle('hidden', sec === 0);
+  document.getElementById('btn-next').classList.toggle('hidden', sec === totalSecs-1);
+  document.getElementById('btn-submit').classList.toggle('hidden', sec !== totalSecs-1);
+
+  const container = document.getElementById('questions-container');
+  container.innerHTML = '';
+
+  qs.forEach(q => {
+    const answered = answers[q.n] !== undefined;
+    const card = document.createElement('div');
+    card.className = 'question-card fadeIn' + (answered ? ' answered' : '');
+    card.id = `qcard-${q.n}`;
+
+    const optKeys = ['A','B','C'];
+    const optHtml = q.opts.map((opt, i) => {
+      const key = optKeys[i];
+      const sel = answers[q.n] === key ? 'selected' : '';
+      return `<label class="option-label ${sel}" id="opt-${q.n}-${key}" onclick="selectAnswer(${q.n},'${key}')">
+        <input type="radio" name="q${q.n}" value="${key}" ${sel?'checked':''}>
+        <div class="option-circle"></div>
+        <span class="option-key">${key}</span>
+        <span>${opt}</span>
+      </label>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="q-number">Pregunta ${q.n}</div>
+      <div class="q-text">${q.text}</div>
+      <div class="options-group">${optHtml}</div>
+    `;
+    container.appendChild(card);
+  });
+
+  updateProgress();
+}
+
+function selectAnswer(qNum, key) {
+  answers[qNum] = key;
+  // Update UI
+  ['A','B','C'].forEach(k => {
+    const lbl = document.getElementById(`opt-${qNum}-${k}`);
+    if(lbl) lbl.classList.toggle('selected', k === key);
+  });
+  const card = document.getElementById(`qcard-${qNum}`);
+  if(card) { card.classList.add('answered'); card.classList.remove('unanswered-highlight'); }
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = Object.keys(answers).length;
+  document.getElementById('prog-answered').textContent = total;
+  document.getElementById('prog-bar').style.width = (total/187*100).toFixed(1) + '%';
+}
+
+function nextSection() {
+  const qs = getQuestionsForSection(currentSection);
+  const unanswered = qs.filter(q => answers[q.n] === undefined);
+  if (unanswered.length > 0) {
+    document.getElementById('val-msg').style.display = 'block';
+    // Highlight unanswered
+    qs.forEach(q => {
+      const card = document.getElementById(`qcard-${q.n}`);
+      if(card) card.classList.toggle('unanswered-highlight', answers[q.n] === undefined);
+    });
+    document.getElementById('val-msg').scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+  currentSection++;
+  renderSection(currentSection);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function prevSection() {
+  if(currentSection > 0) {
+    currentSection--;
+    renderSection(currentSection);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+}
+
+function submitTest() {
+  const qs = getQuestionsForSection(currentSection);
+  const unanswered = qs.filter(q => answers[q.n] === undefined);
+  if (unanswered.length > 0) {
+    document.getElementById('val-msg').style.display = 'block';
+    qs.forEach(q => {
+      const card = document.getElementById(`qcard-${q.n}`);
+      if(card) card.classList.toggle('unanswered-highlight', answers[q.n] === undefined);
+    });
+    return;
+  }
+  // Save result
+  const result = { candidateInfo, answers, scores: computeScores(), timestamp: Date.now() };
+  const saved = JSON.parse(localStorage.getItem('16pf_results') || '[]');
+  saved.push(result);
+  localStorage.setItem('16pf_results', JSON.stringify(saved));
+
+  // Show thank you to candidate
+  showPage('page-thankyou');
+}
+
+// ================================================================
+// SCORING
+// ================================================================
+function computeScores() {
+  const raw = {};
+  FACTORS.forEach(f => {
+    let total = 0;
+    const key = SCORING_KEY[f.id];
+    if(!key) return;
+    key.forEach(item => {
+      const ans = answers[item.q];
+      if(!ans) return;
+      const map = {A:1, B:2, C:3};
+      const val = map[ans];
+      if(val === item.a) total += 2;
+      else if(val === 2 || item.a === 2) total += 1;
+    });
+    // Normalize to 1-10 (sten score)
+    const maxRaw = key.length * 2;
+    const sten = Math.max(1, Math.min(10, Math.round((total / maxRaw) * 9) + 1));
+    raw[f.id] = sten;
+  });
+  return raw;
+}
+
+function computeGlobal(scores) {
+  return {
+    EX: Math.round(((scores.A||5) + (scores.F||5) + (scores.H||5) + (10-(scores.N||5)) + (10-(scores.Q2||5))) / 5),
+    AN: Math.round(((scores.C||5) + (scores.L||5) + (scores.O||5) + (scores.Q4||5) + (10-(scores.Q3||5))) / 5),
+    DU: Math.round(((scores.C||5) + (10-(scores.I||5)) + (10-(scores.M||5)) + (10-(scores.Q1||5))) / 4),
+    IN: Math.round(((scores.E||5) + (scores.M||5) + (scores.Q1||5) + (10-(scores.A||5)) + (10-(scores.G||5)) + (10-(scores.Q3||5))) / 6),
+    SC: Math.round(((scores.G||5) + (scores.Q3||5) + (10-(scores.F||5)) + (10-(scores.M||5))) / 4)
+  };
+}
+
+function getStenLabel(sten) {
+  if(sten <= 3) return {lbl:'Bajo', cls:'score-low'};
+  if(sten <= 7) return {lbl:'Medio', cls:'score-mid'};
+  return {lbl:'Alto', cls:'score-high'};
+}
+
+// ================================================================
+// RESULTS PAGE
+// ================================================================
+function showResults(result) {
+  const { candidateInfo: ci, scores } = result;
+  const global = computeGlobal(scores);
+
+  // Candidate info
+  document.getElementById('res-candidate-info').innerHTML = `
+    <div class="cinfo-item"><label>Nombre</label><span>${ci.name}</span></div>
+    <div class="cinfo-item"><label>Puesto</label><span>${ci.position}</span></div>
+    <div class="cinfo-item"><label>Edad</label><span>${ci.age}</span></div>
+    <div class="cinfo-item"><label>Escolaridad</label><span>${ci.edu}</span></div>
+    <div class="cinfo-item"><label>Fecha</label><span>${ci.date} ${ci.time||''}</span></div>
+  `;
+
+  // Factor chart
+  const chartHtml = FACTORS.map(f => {
+    const s = scores[f.id] || 5;
+    const pct = ((s-1)/9*100).toFixed(0);
+    const {lbl, cls} = getStenLabel(s);
+    const label = s <= 4 ? f.low : s >= 7 ? f.high : 'Promedio';
+    return `<div class="factor-row">
+      <div>
+        <div class="factor-name">${f.id} — ${f.name}</div>
+        <div class="factor-low">${f.low} ← → ${f.high}</div>
+      </div>
+      <div class="bar-container">
+        <div class="bar-fill" style="width:${pct}%"></div>
+        <div class="bar-marker" style="left:${pct}%"></div>
+      </div>
+      <div>
+        <div class="factor-score">${s}</div>
+        <div class="factor-label">${label}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('res-factors-chart').innerHTML = chartHtml;
+
+  // Global factors
+  const globalNames = {
+    EX: {name:'Extraversión', low:'Introvertido', high:'Extravertido'},
+    AN: {name:'Ansiedad', low:'Bajo Estrés', high:'Alta Ansiedad'},
+    DU: {name:'Dureza', low:'Receptivo', high:'Duro / Resolutivo'},
+    IN: {name:'Independencia', low:'Acomodaticio', high:'Independiente'},
+    SC: {name:'Autocontrol', low:'Desinhibido', high:'Alto Autocontrol'}
+  };
+  const globalHtml = Object.entries(global).map(([k,v]) => {
+    const g = globalNames[k];
+    const lbl = v <= 4 ? g.low : v >= 7 ? g.high : 'Promedio';
+    return `<div class="global-card">
+      <div class="g-name">${g.name}</div>
+      <div class="g-score">${v}</div>
+      <div class="g-label">${lbl}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('res-global').innerHTML = globalHtml;
+
+  // Interpretation
+  const topFactors = FACTORS
+    .map(f => ({...f, s: scores[f.id]||5}))
+    .sort((a,b) => Math.abs(b.s-5.5) - Math.abs(a.s-5.5))
+    .slice(0,4);
+
+  const interpHtml = topFactors.map(f => {
+    const s = f.s;
+    const dir = s >= 7 ? 'alto' : s <= 3 ? 'bajo' : 'promedio';
+    const desc = s >= 7
+      ? `Puntaje alto en ${f.name} (${s}/10): tendencia hacia ${f.high}. ${f.desc}`
+      : s <= 3
+      ? `Puntaje bajo en ${f.name} (${s}/10): tendencia hacia ${f.low}. ${f.desc}`
+      : `Puntaje medio en ${f.name} (${s}/10): balance entre ${f.low} y ${f.high}.`;
+    return `<div class="interp-box"><h4>${f.id} — ${f.name} (Decatipo: ${s})</h4><p>${desc}</p></div>`;
+  }).join('');
+  document.getElementById('res-interpretation').innerHTML = interpHtml;
+
+  // Scores table
+  const tableHtml = `<table>
+    <thead><tr><th>Factor</th><th>Nombre</th><th>Decatipo</th><th>Nivel</th><th>Descripción</th></tr></thead>
+    <tbody>
+      ${FACTORS.map(f => {
+        const s = scores[f.id]||5;
+        const {lbl,cls} = getStenLabel(s);
+        return `<tr>
+          <td><strong>${f.id}</strong></td>
+          <td>${f.name}</td>
+          <td style="text-align:center;font-weight:700;font-size:1.1rem">${s}</td>
+          <td><span class="score-chip ${cls}">${lbl}</span></td>
+          <td style="font-size:0.82rem;color:var(--muted)">${s<=3?f.low:s>=7?f.high:'Rango promedio'}</td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>`;
+  document.getElementById('res-scores-table').innerHTML = tableHtml;
+
+  showPage('page-results');
+}
+
+// ================================================================
+// ADMIN PANEL
+// ================================================================
+function loadAdminPanel() {
+  const results = JSON.parse(localStorage.getItem('16pf_results') || '[]');
+
+  // Stats
+  document.getElementById('admin-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-val">${results.length}</div><div class="stat-lbl">Evaluaciones Totales</div></div>
+    <div class="stat-card"><div class="stat-val">${results.filter(r=>r.timestamp > Date.now()-86400000).length}</div><div class="stat-lbl">Hoy</div></div>
+    <div class="stat-card"><div class="stat-val">${results.filter(r=>r.timestamp > Date.now()-604800000).length}</div><div class="stat-lbl">Esta Semana</div></div>
+    <div class="stat-card"><div class="stat-val">${results.length > 0 ? (Object.values(results[results.length-1].scores||{}).reduce((a,b)=>a+b,0) / 16).toFixed(1) : '—'}</div><div class="stat-lbl">Último Promedio</div></div>
+  `;
+
+  const tbody = document.getElementById('admin-tbody');
+  const empty = document.getElementById('admin-empty');
+
+  if(results.length === 0) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  tbody.innerHTML = results.map((r,i) => {
+    const ci = r.candidateInfo || {};
+    const date = ci.date || new Date(r.timestamp).toLocaleDateString('es-ES');
+    return `<tr>
+      <td>${results.length - i}</td>
+      <td><strong>${ci.name || '—'}</strong></td>
+      <td>${ci.position || '—'}</td>
+      <td>${date}</td>
+      <td>${ci.age || '—'}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-view" onclick="viewResult(${i})">Ver Reporte</button>
+          <button class="btn-del" onclick="deleteResult(${i})">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  }).reverse().join('');
+}
+
+function viewResult(idx) {
+  const results = JSON.parse(localStorage.getItem('16pf_results') || '[]');
+  if(results[idx]) showResults(results[idx]);
+}
+
+function deleteResult(idx) {
+  if(!confirm('¿Eliminar este registro?')) return;
+  const results = JSON.parse(localStorage.getItem('16pf_results') || '[]');
+  results.splice(idx, 1);
+  localStorage.setItem('16pf_results', JSON.stringify(results));
+  loadAdminPanel();
+}
+
+function clearAllResults() {
+  if(!confirm('¿Eliminar TODOS los registros? Esta acción no se puede deshacer.')) return;
+  localStorage.removeItem('16pf_results');
+  loadAdminPanel();
+}
+
+// ================================================================
+// INIT
+// ================================================================
+document.getElementById('main-header').style.display = 'flex';
+</script>
+</body>
+</html>
